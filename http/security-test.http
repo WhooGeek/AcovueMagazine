@@ -1,0 +1,24 @@
+### 회원가입
+POST localhost:8080/users
+Content-Type: application/json
+
+{
+  "userId" : "user01",
+  "pwd" : "pass01",
+  "email" : "test@gamil.com",
+  "name" : "홍길동"
+}
+
+### 로그인
+POST localhost:8080/login
+Content-Type: application/json
+
+{
+  "userId" : "user01",
+  "pwd" : "pass01"
+}
+
+### 유저 정보 조회 (인증된 user, admin 만 가능)
+@id = 1
+GET localhost:8080/users/{{id}}
+Authorization: Bearer f2HJ8BXS9N6L1DYAlH/ryKM/ioo6ZtfpO2CaU8tf+GFs1Rlzo7h3fG4700US5JV3H6ajAJ9g4Tq65g0boLKSZw==
