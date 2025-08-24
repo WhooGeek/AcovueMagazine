@@ -3,7 +3,10 @@ package com.AcovueMagazine.User.Security;
 import com.AcovueMagazine.User.Dto.LoginRequest;
 import com.AcovueMagazine.User.Handler.LoginSuccessHandler;
 import com.AcovueMagazine.User.Security.Filter.CustomAuthenticationFilter;
+import com.AcovueMagazine.User.Security.Filter.JwtAccessDeniedHandler;
+import com.AcovueMagazine.User.Security.Filter.JwtAuthenticationEntryPoint;
 import com.AcovueMagazine.User.Security.Filter.JwtFilter;
+import com.AcovueMagazine.User.Security.Util.JwtUtil;
 import com.AcovueMagazine.User.Service.UserService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.Filter;
@@ -30,6 +33,7 @@ public class SecurityConfig {
     private final BCryptPasswordEncoder passwordEncoder;
     private final UserService userService;
     private final Environment env;
+    private final JwtUtil jwtUtil;
 
     @Bean
     protected SecurityFilterChain configure(HttpSecurity http) throws Exception {
@@ -46,10 +50,19 @@ public class SecurityConfig {
                 );
 
         // JWT 토큰 유효성 검사 필터
-        http.addFilterBefore(new JwtFilter(), UsernamePasswordAuthenticationFilter.class);
+        http.addFilterBefore(new JwtFilter(jwtUtil), UsernamePasswordAuthenticationFilter.class);
 
         // 커스텀 로그인 필터
         http.addFilterBefore(getAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
+
+        // 인증 인가 실패 핸들러 설정
+        http.exceptionHandling(
+                exceptionHandling ->{
+                    exceptionHandling.accessDeniedHandler(new JwtAccessDeniedHandler());
+                    exceptionHandling.authenticationEntryPoint(new JwtAuthenticationEntryPoint());
+                }
+
+        );
 
         return http.build();
     }

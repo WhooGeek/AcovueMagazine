@@ -17,3 +17,4 @@ spring:
 token:
   secret: ${TOKEN}
   expiration_time : 43200000
+#  expiration_time : 1000

@@ -72,6 +72,7 @@ public class JwtUtil {
                              .collect(Collectors.toList());
         }*/
 
+        // DB 에서 뽑아쓰는걸로 변경
         return new UsernamePasswordAuthenticationToken(userDetails, "", userDetails.getAuthorities());
     }
 
