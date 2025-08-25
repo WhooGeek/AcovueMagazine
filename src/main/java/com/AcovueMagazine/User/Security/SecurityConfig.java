@@ -2,6 +2,7 @@ package com.AcovueMagazine.User.Security;
 
 import com.AcovueMagazine.User.Dto.LoginRequest;
 import com.AcovueMagazine.User.Handler.LoginSuccessHandler;
+import com.AcovueMagazine.User.Security.Dto.MemberRole;
 import com.AcovueMagazine.User.Security.Filter.CustomAuthenticationFilter;
 import com.AcovueMagazine.User.Security.Filter.JwtAccessDeniedHandler;
 import com.AcovueMagazine.User.Security.Filter.JwtAuthenticationEntryPoint;
@@ -37,49 +38,73 @@ public class SecurityConfig {
 
     @Bean
     protected SecurityFilterChain configure(HttpSecurity http) throws Exception {
-        // 일단 토큰 발생 시 클라에게 넘겨주는 기능 비활성화
-        http.csrf(csrf -> csrf.disable())
-                .authorizeHttpRequests(authz ->
-                    authz.requestMatchers(new AntPathRequestMatcher("/users/**", "POST")).permitAll()
-                            .requestMatchers(new AntPathRequestMatcher("/users/**", "GET")).hasAuthority("ADMIN")
-                            .anyRequest().authenticated() // 위 요청 외 모든 요청 인증 필요
-                )
-                // 로그인 방식 토큰 방식 사용 예정, 세션 사용 X
-                .sessionManagement(
-                        Session -> Session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-                );
+//        // 일단 토큰 발생 시 클라에게 넘겨주는 기능 비활성화
+//        http.csrf(csrf -> csrf.disable())
+//                .authorizeHttpRequests(authz ->
+//                    authz.requestMatchers(new AntPathRequestMatcher("/users/**", "POST")).permitAll()
+//                            .requestMatchers(new AntPathRequestMatcher("/users/**", "GET")).hasAuthority("ADMIN")
+//                            .anyRequest().authenticated() // 위 요청 외 모든 요청 인증 필요
+//                )
+//                // 로그인 방식 토큰 방식 사용 예정, 세션 사용 X
+//                .sessionManagement(
+//                        Session -> Session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+//                );
+//
+//        // JWT 토큰 유효성 검사 필터
+//        http.addFilterBefore(new JwtFilter(jwtUtil), UsernamePasswordAuthenticationFilter.class);
 
-        // JWT 토큰 유효성 검사 필터
-        http.addFilterBefore(new JwtFilter(jwtUtil), UsernamePasswordAuthenticationFilter.class);
-
-        // 커스텀 로그인 필터
-        http.addFilterBefore(getAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
-
-        // 인증 인가 실패 핸들러 설정
-        http.exceptionHandling(
-                exceptionHandling ->{
-                    exceptionHandling.accessDeniedHandler(new JwtAccessDeniedHandler());
-                    exceptionHandling.authenticationEntryPoint(new JwtAuthenticationEntryPoint());
-                }
-
+//        // 커스텀 로그인 필터
+//        http.addFilterBefore(getAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
+//
+//        // 인증 인가 실패 핸들러 설정
+//        http.exceptionHandling(
+//                exceptionHandling ->{
+//                    exceptionHandling.accessDeniedHandler(new JwtAccessDeniedHandler());
+//                    exceptionHandling.authenticationEntryPoint(new JwtAuthenticationEntryPoint());
+//                }
+        // 접근 권한 설정
+        http.authorizeRequests((auth) -> auth
+                .requestMatchers("/oauth-login/admin").hasRole(MemberRole.ADMIN.name())
+                .requestMatchers("/oauth-login/info").authenticated()
+                .anyRequest().permitAll()
         );
+
+        // 폼 로그인 방식
+        http.formLogin((auth) -> auth.loginPage("/oauth-login/login")
+                .loginProcessingUrl("/oauth-login/loginProc")
+                .usernameParameter("loginId")
+                .passwordParameter("password")
+                .defaultSuccessUrl("/oauth-login")
+                .failureUrl("/oauth-login")
+                .permitAll());
+
+        // Oauth 2.0 로그인 방식
+        http.oauth2Login((auth) -> auth.loginPage("/oauth-login/login")
+                .defaultSuccessUrl("/oauth-login")
+                .failureUrl("/oauth-login")
+                .permitAll());
+
+        http.logout((auth) -> auth.logoutUrl("/oauth-login/logout"));
+        http.csrf((auth) -> auth.disable());
 
         return http.build();
     }
 
-    private Filter getAuthenticationFilter() {
-        CustomAuthenticationFilter customAuthenticationFilter = new CustomAuthenticationFilter();
-        // request body에 담긴 정보를 우리가 만든 ㅣoginrequest 타입에 담아줌
-        customAuthenticationFilter.setAuthenticationManager(getAuthenticationManager());
-        customAuthenticationFilter.setAuthenticationSuccessHandler(new LoginSuccessHandler(env));
-        customAuthenticationFilter.setAuthenticationFailureHandler(new LoginFailuerHandler());
-        return customAuthenticationFilter;
-    }
 
-    private AuthenticationManager getAuthenticationManager() {
-        DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
-        provider.setPasswordEncoder(passwordEncoder);
-        provider.setUserDetailsService(userService);
-        return new ProviderManager(provider);
-    }
+
+//    private Filter getAuthenticationFilter() {
+//        CustomAuthenticationFilter customAuthenticationFilter = new CustomAuthenticationFilter();
+//        // request body에 담긴 정보를 우리가 만든 ㅣoginrequest 타입에 담아줌
+//        customAuthenticationFilter.setAuthenticationManager(getAuthenticationManager());
+//        customAuthenticationFilter.setAuthenticationSuccessHandler(new LoginSuccessHandler(env));
+//        customAuthenticationFilter.setAuthenticationFailureHandler(new LoginFailuerHandler());
+//        return customAuthenticationFilter;
+//    }
+
+//    private AuthenticationManager getAuthenticationManager() {
+//        DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
+//        provider.setPasswordEncoder(passwordEncoder);
+//        provider.setUserDetailsService(userService);
+//        return new ProviderManager(provider);
+//    }
 }
