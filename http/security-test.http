@@ -1,0 +1,26 @@
+### 회원가입
+POST localhost:8080/users
+Content-Type: application/json
+
+{
+  "userId" : "user01",
+  "pwd" : "pass01",
+  "email" : "test@gamil.com",
+  "name" : "홍길동"
+}
+
+### 로그인
+POST localhost:8080/login
+Content-Type: application/json
+
+{
+  "userId" : "user01",
+  "pwd" : "pass01"
+}
+
+### 유저 정보 조회 (인증된 user, admin 만 가능)
+### .토큰값 x or 올바른 토큰 x or 토큰 유효기간 만료 -> 확인 완료
+### 올바른 값 -> 확인 완료
+@id = 1
+GET localhost:8080/users/{{id}}
+Authorization: Bearer eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJ1c2VyMDEiLCJhdXRoIjpbIlVTRVIiXSwiZXhwIjoxNzU2MDkwMjA4fQ.U7OSsniNbDZmoOuIaNPxtCxPt3s0Snym7f8m1uOknrP9R07yylU06FW9OfPcrkbMToVu29oujhSQu9WytoGxGQ
