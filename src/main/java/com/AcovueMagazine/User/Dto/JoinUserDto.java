@@ -13,7 +13,7 @@ import lombok.Setter;
 @NoArgsConstructor
 public class JoinUserDto {
 
-    @NotBlank(message = "ID를 입려하세요.")
+    @NotBlank(message = "ID를 입력하세요.")
     private String loginId;
 
     @NotBlank(message = "비밀번호를 입력하세요.")
@@ -32,4 +32,6 @@ public class JoinUserDto {
                 .role(MemberRole.USER)
                 .build();
     }
+
+
 }
