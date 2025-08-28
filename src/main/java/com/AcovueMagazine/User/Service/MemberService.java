@@ -5,6 +5,7 @@ import com.AcovueMagazine.User.Dto.LoginUserDto;
 import com.AcovueMagazine.User.Entity.Member;
 import com.AcovueMagazine.User.Repository.MemberRepository;
 import jakarta.transaction.Transactional;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -47,4 +48,17 @@ public class MemberService {
     }
 
 
+    public Member getLoginMemberByLoginId(String loginId) {
+        if(loginId == null) return null;
+
+        return memberRepository.findByLoginId(loginId);
+
+    }
+
+    public void securityJoin(JoinUserDto joinUserDto) {
+        if(memberRepository.existsByLoginId(joinUserDto.getLoginId())){
+            return;
+        }
+
+    }
 }
