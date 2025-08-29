@@ -3,8 +3,6 @@ package com.AcovueMagazine.Magazine.Controller;
 
 import com.AcovueMagazine.Common.Response.ApiResponse;
 import com.AcovueMagazine.Common.Response.ResponseUtil;
-import com.AcovueMagazine.Magazine.DTO.Magazine;
-import com.AcovueMagazine.Magazine.DTO.MagazineReqDTO;
 import com.AcovueMagazine.Magazine.DTO.MagazineResDTO;
 import com.AcovueMagazine.Magazine.Service.MagazineService;
 import lombok.RequiredArgsConstructor;
