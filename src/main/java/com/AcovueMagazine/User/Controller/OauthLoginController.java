@@ -1,7 +1,6 @@
 package com.AcovueMagazine.User.Controller;
 
-import com.AcovueMagazine.User.Dto.JoinUserDto;
-import com.AcovueMagazine.User.Dto.LoginUserDto;
+import com.AcovueMagazine.User.Dto.JoinUserReqDTO;
 import com.AcovueMagazine.User.Entity.Member;
 import com.AcovueMagazine.User.Service.MemberService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -60,12 +59,12 @@ public class OauthLoginController {
         model.addAttribute("pageName", "oauth 로그인");
 
         // 회원 가입 하려면 Model entity 통해서 요청을 전달해야함
-        model.addAttribute("joinRequest", new JoinUserDto());
+        model.addAttribute("joinRequest", new JoinUserReqDTO());
         return "join";
     }
 
     @PostMapping("/join")
-    public String joinPage(@Valid @ModelAttribute JoinUserDto joinUserDto, BindingResult bindingResult, Model model) {
+    public String joinPage(@Valid @ModelAttribute JoinUserReqDTO joinUserDto, BindingResult bindingResult, Model model) {
         model.addAttribute("loginType", "oauth-login");
         model.addAttribute("pageName", "oauth 로그인");
 
@@ -96,7 +95,7 @@ public class OauthLoginController {
         model.addAttribute("loginType", "oauth-login");
         model.addAttribute("pageName", "oauth 로그인");
 
-        model.addAttribute("loginRequest", new LoginUserDto());
+        model.addAttribute("loginRequest", new JoinUserReqDTO());
         return "login";
     }
 

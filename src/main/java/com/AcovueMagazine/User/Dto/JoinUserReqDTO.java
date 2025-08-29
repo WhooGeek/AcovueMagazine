@@ -11,7 +11,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @NoArgsConstructor
-public class JoinUserDto {
+public class JoinUserReqDTO {
 
     @NotBlank(message = "ID를 입력하세요.")
     private String loginId;
