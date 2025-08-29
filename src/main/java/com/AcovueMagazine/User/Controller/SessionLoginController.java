@@ -1,7 +1,7 @@
 package com.AcovueMagazine.User.Controller;
 
-import com.AcovueMagazine.User.Dto.JoinUserDto;
-import com.AcovueMagazine.User.Dto.LoginUserDto;
+import com.AcovueMagazine.User.Dto.JoinUserReqDTO;
+import com.AcovueMagazine.User.Dto.LoginUserReqDTO;
 import com.AcovueMagazine.User.Entity.Member;
 import com.AcovueMagazine.User.Entity.MemberRole;
 import com.AcovueMagazine.User.Service.MemberService;
@@ -44,12 +44,12 @@ public class SessionLoginController {
         model.addAttribute("pageName", "세션로그인");
 
         // 회원가입을 위해서 model 통해서 joinRequest 전달
-        model.addAttribute("joinRequest", new JoinUserDto());
+        model.addAttribute("joinRequest", new JoinUserReqDTO());
         return "join";
     }
 
     @PostMapping("/join")
-    public String join(@Valid @ModelAttribute JoinUserDto joinRequest,
+    public String join(@Valid @ModelAttribute JoinUserReqDTO joinRequest,
                        BindingResult bindingResult, Model model) {
 
         model.addAttribute("loginType", "session-login");
@@ -84,12 +84,12 @@ public class SessionLoginController {
         model.addAttribute("loginType", "session-login");
         model.addAttribute("pageName", "세션로그인");
 
-        model.addAttribute("loginRequest", new LoginUserDto());
+        model.addAttribute("loginRequest", new LoginUserReqDTO());
         return "login";
     }
 
     @PostMapping("/login")
-    public String login(@ModelAttribute LoginUserDto loginRequest, BindingResult bindingResult,
+    public String login(@ModelAttribute LoginUserReqDTO loginRequest, BindingResult bindingResult,
                         HttpServletRequest httpServletRequest, Model model) {
         model.addAttribute("loginType", "session-login");
         model.addAttribute("pageName", "세션로그인");
