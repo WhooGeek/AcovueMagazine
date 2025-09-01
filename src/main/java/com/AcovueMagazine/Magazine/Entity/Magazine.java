@@ -32,7 +32,20 @@ public class Magazine {
     @Column(name = "reg_date", updatable = false)
     private LocalDateTime regDate;
 
+    @PrePersist
+    public void prePersist(){
+        this.regDate = LocalDateTime.now();
+    }
+
     @Column(name = "mod_date")
     private LocalDateTime modDate;
+
+    public Magazine(Users user, String magazineTitle, String magazineContent) {
+        this.user = user;
+        this.magazineTitle = magazineTitle;
+        this.magazineContent = magazineContent;
+    }
+
+
 
 }
