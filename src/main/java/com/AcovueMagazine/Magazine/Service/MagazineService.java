@@ -32,9 +32,11 @@ public class MagazineService {
                         magazine.getUser().getUser_nickname(),
                         magazine.getUser().getUser_email(),
                         magazine.getUser().getUser_status(),
-                        magazine.getMagazine_seq(),
-                        magazine.getMagazine_title(),
-                        magazine.getMagazine_content()
+                        magazine.getMagazineSeq(),
+                        magazine.getMagazineTitle(),
+                        magazine.getMagazineContent(),
+                        magazine.getRegDate(),
+                        magazine.getModDate()
                 ))
                 .collect(Collectors.toList());
     }

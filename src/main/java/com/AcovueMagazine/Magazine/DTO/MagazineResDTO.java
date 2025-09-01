@@ -8,20 +8,24 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.time.LocalDateTime;
+
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 public class MagazineResDTO {
 
-    private Long user_seq;
-    private String user_name;
-    private String user_nickname;
-    private String user_email;
-    private UserStatus user_status;
-    private Long magazine_seq;
-    private String magazine_title;
-    private String magazine_content;
+    private Long userSeq;
+    private String userName;
+    private String userNickname;
+    private String userEmail;
+    private UserStatus userStatus;
+    private Long magazineSeq;
+    private String magazineTitle;
+    private String magazineContent;
+    private LocalDateTime regDate;
+    private LocalDateTime modDate;
 
 
     // Entity -> DTO
@@ -32,9 +36,11 @@ public class MagazineResDTO {
                 magazine.getUser().getUser_nickname(),
                 magazine.getUser().getUser_email(),
                 magazine.getUser().getUser_status(),
-                magazine.getMagazine_seq(),
-                magazine.getMagazine_title(),
-                magazine.getMagazine_content()
+                magazine.getMagazineSeq(),
+                magazine.getMagazineTitle(),
+                magazine.getMagazineContent(),
+                magazine.getRegDate(),
+                magazine.getModDate()
         );
     }
 }
