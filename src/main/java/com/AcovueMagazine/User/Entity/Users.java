@@ -14,23 +14,27 @@ public class Users {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "user_Seq", nullable = false)
-    private Long user_Seq;
+    private Long userSeq;
 
     @Column(name = "user_id", nullable = false)
-    private String user_id;
+    private String userId;
 
     @Column(name = "user_name", nullable = false)
-    private String user_name;
+    private String userName;
 
     @Column(name = "user_nickname", nullable = false)
-    private String user_nickname;
+    private String userNickname;
 
     @Column(name = "user_email", nullable = false)
-    private String user_email;
+    private String userEmail;
+
+    @Column(name = "user_roll", nullable = false)
+    @Enumerated(EnumType.STRING)
+    private UserRoll userRoll;
 
     @Column(name = "user_status", nullable = false)
     @Enumerated(EnumType.STRING)
-    private UserStatus user_status;
+    private UserStatus userStatus;
 
 
 
