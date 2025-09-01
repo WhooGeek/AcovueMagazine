@@ -74,7 +74,6 @@ public class MagazineService {
         return MagazineResDTO.fromEntity(magazine);
     }
 
-
     // 매거진 삭제 기능
     @Transactional
     public MagazineResDTO deleteMagazine(Long magazineId, Users currentUsers) {
@@ -92,6 +91,5 @@ public class MagazineService {
 
         return MagazineResDTO.fromEntity(magazine);
     }
-
 
 }
