@@ -7,6 +7,7 @@ import com.AcovueMagazine.Magazine.DTO.MagazineResDTO;
 import com.AcovueMagazine.Magazine.Service.MagazineService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -23,7 +24,14 @@ public class MagazineController {
     @GetMapping("/findAll")
     public ApiResponse<?> getMagazineList() {
         List<MagazineResDTO> magazines = magazineService.getAllMagazines();
-        return ResponseUtil.successResponse("데이터를 성공적으로 조회하였습니다.", magazines).getBody();
+        return ResponseUtil.successResponse("매거진 전체 조회를 성공적으로 수행하였습니다.", magazines).getBody();
+    }
+
+    // 매거진 상세조회
+    @GetMapping("/find/{magazineId}")
+    public ApiResponse<?> getMagazineById(@PathVariable Long magazineId) {
+        MagazineResDTO magazine = magazineService.getMagazine(magazineId);
+        return ResponseUtil.successResponse("매거진 상세조회를 성공적으로 수행하였습니다.", magazine).getBody();
     }
 
 
