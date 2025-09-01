@@ -32,10 +32,6 @@ public class Users {
     @Enumerated(EnumType.STRING)
     private UserRoll userRoll;
 
-    @Column(name = "user_roll", nullable = false)
-    @Enumerated(EnumType.STRING)
-    private UserRoll user_roll;
-
     @Column(name = "user_status", nullable = false)
     @Enumerated(EnumType.STRING)
     private UserStatus userStatus;
