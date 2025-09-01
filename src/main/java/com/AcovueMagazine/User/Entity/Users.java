@@ -28,6 +28,10 @@ public class Users {
     @Column(name = "user_email", nullable = false)
     private String user_email;
 
+    @Column(name = "user_roll", nullable = false)
+    @Enumerated(EnumType.STRING)
+    private UserRoll user_roll;
+
     @Column(name = "user_status", nullable = false)
     @Enumerated(EnumType.STRING)
     private UserStatus user_status;

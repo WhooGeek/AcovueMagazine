@@ -4,15 +4,18 @@ package com.AcovueMagazine.Magazine.Service;
 import com.AcovueMagazine.Magazine.Entity.Magazine;
 import com.AcovueMagazine.Magazine.DTO.MagazineResDTO;
 import com.AcovueMagazine.Magazine.Repository.MagazineRepository;
+import com.AcovueMagazine.User.Entity.UserRoll;
 import com.AcovueMagazine.User.Entity.UserStatus;
+import com.AcovueMagazine.User.Entity.Users;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-
 import java.util.List;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class MagazineService {
@@ -53,4 +56,23 @@ public class MagazineService {
 
         return MagazineResDTO.fromEntity(magazine);
     }
+
+    // 매거진 삭제 기능
+    @Transactional
+    public MagazineResDTO deleteMagazine(Long magazineId, Users currentUsers) {
+        Magazine magazine = magazineRepository.findById(magazineId)
+                .orElseThrow(() -> new EntityNotFoundException("해당 매거진을 찾을 수 없습니다. ID = " + magazineId));
+
+
+        if (magazine.getUser().getUser_Seq().equals(currentUsers.getUser_Seq()) ||
+            currentUsers.getUser_roll() == UserRoll.ADMIN) {
+            magazineRepository.delete(magazine);
+        } else {
+            throw new org.springframework.security.access.AccessDeniedException("삭제 권한이 없습니다.");
+        }
+
+
+        return MagazineResDTO.fromEntity(magazine);
+    }
+
 }
