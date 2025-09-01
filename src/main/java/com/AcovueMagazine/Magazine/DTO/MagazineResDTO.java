@@ -31,11 +31,11 @@ public class MagazineResDTO {
     // Entity -> DTO
     public static MagazineResDTO fromEntity(Magazine magazine) {
         return new MagazineResDTO(
-                magazine.getUser().getUser_Seq(),
-                magazine.getUser().getUser_name(),
-                magazine.getUser().getUser_nickname(),
-                magazine.getUser().getUser_email(),
-                magazine.getUser().getUser_status(),
+                magazine.getUser().getUserSeq(),
+                magazine.getUser().getUserName(),
+                magazine.getUser().getUserNickname(),
+                magazine.getUser().getUserEmail(),
+                magazine.getUser().getUserStatus(),
                 magazine.getMagazineSeq(),
                 magazine.getMagazineTitle(),
                 magazine.getMagazineContent(),
