@@ -17,4 +17,14 @@ public class MagazineResDTO {
     private Long user_id;
     private String magazine_title;
     private String magazine_content;
+
+    // Entity -> DTO
+    public static MagazineResDTO fromEntity(Magazine magazine) {
+        return new MagazineResDTO(
+                magazine.getUser_seq(),
+                magazine.getMagazine_seq(),
+                magazine.getMagazine_title(),
+                magazine.getMagazine_content()
+        );
+    }
 }
