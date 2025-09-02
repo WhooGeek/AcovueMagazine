@@ -13,6 +13,7 @@ import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -70,6 +71,36 @@ public class MagazineService {
         Magazine magazine = new Magazine(users, magazineReqDTO.getMagazine_title(), magazineReqDTO.getMagazine_content());
 
         magazine = magazineRepository.save(magazine);
+
+        return MagazineResDTO.fromEntity(magazine);
+    }
+
+    // 매거진 수정 기능
+    @Transactional
+    public MagazineResDTO updateMagazine(MagazineReqDTO magazineReqDTO, Long magazineId) {
+
+        Magazine magazine = magazineRepository.findById(magazineId)
+                .orElseThrow(() -> new EntityNotFoundException("해당 매거진을 찾을 수 없습니다. ID = " + magazineId));
+
+        Users users = usersRepository.findById(magazineReqDTO.getUserSeq())
+                .orElseThrow(()-> new EntityNotFoundException("해당 유저를 찾을 수 없습니다."));
+
+        // 권한 체크
+        if (!magazine.getUser().getUserSeq().equals(users.getUserSeq()) &&
+                users.getUserRoll() != UserRoll.ADMIN) {
+            throw new AccessDeniedException("수정 권한이 없습니다.");
+        }
+
+        // 제목 수정이 있으면 저장
+        if (magazineReqDTO.getMagazine_title() != null && !magazineReqDTO.getMagazine_title().isBlank()) {
+            magazine.updateTitle(magazineReqDTO.getMagazine_title());
+        }
+
+
+        // 내용 수정이 있으면 저장
+        if (magazineReqDTO.getMagazine_content() != null && !magazineReqDTO.getMagazine_content().isBlank()) {
+            magazine.updateContent(magazineReqDTO.getMagazine_content());
+        }
 
         return MagazineResDTO.fromEntity(magazine);
     }

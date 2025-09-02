@@ -40,6 +40,13 @@ public class MagazineController {
         return ResponseUtil.successResponse("매거진 생성을 성공적으로 수행하였습니다.", magazine).getBody();
     }
 
+    // 매거진 수정
+    @PutMapping("/put/{magazineId}")
+    public ApiResponse<?> updateMagazine(@PathVariable Long magazineId, @RequestBody MagazineReqDTO magazineReqDTO) {
+        MagazineResDTO magazine = magazineService.updateMagazine(magazineReqDTO, magazineId);
+        return ResponseUtil.successResponse("매거진 수정이 성공적으로 수행되었습니다.", magazine).getBody();
+    }
+
     // 매거진 삭제
     @DeleteMapping("/delete/{magazineId}")
     public ApiResponse<?> deleteMagazine(@PathVariable Long magazineId, @RequestBody Users users) {
