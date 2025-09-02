@@ -20,7 +20,7 @@ public class MagazineController {
     private final MagazineService magazineService;
 
     // 매거진 조회
-    @GetMapping("/findAll")
+    @GetMapping("/find/all")
     public ApiResponse<?> getMagazineList() {
         List<MagazineResDTO> magazines = magazineService.getAllMagazines();
         return ResponseUtil.successResponse("매거진 전체 조회를 성공적으로 수행하였습니다.", magazines).getBody();
@@ -41,7 +41,7 @@ public class MagazineController {
     }
 
     // 매거진 수정
-    @PutMapping("/put/{magazineId}")
+    @PutMapping("/update/{magazineId}")
     public ApiResponse<?> updateMagazine(@PathVariable Long magazineId, @RequestBody MagazineReqDTO magazineReqDTO) {
         MagazineResDTO magazine = magazineService.updateMagazine(magazineReqDTO, magazineId);
         return ResponseUtil.successResponse("매거진 수정이 성공적으로 수행되었습니다.", magazine).getBody();
