@@ -1,5 +1,6 @@
 package com.AcovueMagazine.Comment.Entity;
 
+import com.AcovueMagazine.Magazine.Entity.Magazine;
 import com.AcovueMagazine.User.Entity.Users;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
@@ -37,5 +38,9 @@ public class Comment {
 
     @OneToMany(mappedBy = "parent")
     private List<Comment> children = new ArrayList<>();
+
+    @ManyToOne
+    @JoinColumn(name = "magazine_seq", nullable = false)
+    private Magazine magazine;
 
 }
