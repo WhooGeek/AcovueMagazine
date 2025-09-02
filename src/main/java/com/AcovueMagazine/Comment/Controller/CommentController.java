@@ -1,13 +1,12 @@
 package com.AcovueMagazine.Comment.Controller;
 
+import com.AcovueMagazine.Comment.DTO.CommentReqDTO;
 import com.AcovueMagazine.Comment.DTO.CommentResDTO;
 import com.AcovueMagazine.Comment.Service.CommentService;
 import com.AcovueMagazine.Common.Response.ApiResponse;
+import com.AcovueMagazine.Common.Response.ResponseUtil;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -24,6 +23,15 @@ public class CommentController {
 
         List<CommentResDTO> comments = commentService.getComment(magazineId);
 
-        return ApiResponse.ofSuccess("댓글을 성공적으로 조회하였습니다.", comments);
+        return ResponseUtil.successResponse("댓글을 성공적으로 조회하였습니다.", comments).getBody();
+    }
+
+    // 댓글, 대댓글 등록
+    @PostMapping("/create/{magazineId}")
+    public ApiResponse<?> createComment(@PathVariable Long magazineId, @RequestBody CommentReqDTO commentReqDTO){
+
+        CommentResDTO comment = commentService.createComment(magazineId, commentReqDTO);
+
+        return ResponseUtil.successResponse("댓글을 성공적으로 조회하였습니다.", comment).getBody();
     }
 }
