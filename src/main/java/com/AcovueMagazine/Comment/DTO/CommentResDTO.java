@@ -20,6 +20,8 @@ public class CommentResDTO {
     private String commentContent;
     private List<CommentResDTO> children;
 
+    private Long parentSeq; // 부모 댓글 시퀀스
+
     // Entity -> DTO
     public static CommentResDTO fromEntity(Comment comment) {
         CommentResDTO commentResDTO = new CommentResDTO();
@@ -28,7 +30,6 @@ public class CommentResDTO {
         commentResDTO.setUserName(comment.getUser().getUserName());
         commentResDTO.setChildren(new ArrayList<>());
         return commentResDTO;
-
     }
 
     // 댓글 - 대댓글 연결용 Setter

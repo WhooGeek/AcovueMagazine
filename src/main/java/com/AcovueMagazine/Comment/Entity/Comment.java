@@ -29,7 +29,7 @@ public class Comment {
     private String commentContent;
 
     @Enumerated(EnumType.STRING)
-    @Column(name="comment_status")
+    @Column(name="comment_status", nullable = false)
     private CommentStatus commentStatus;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -43,4 +43,11 @@ public class Comment {
     @JoinColumn(name = "magazine_seq", nullable = false)
     private Magazine magazine;
 
+    public Comment(Users user, Magazine magazine, String commentContent, Comment parent) {
+        this.user = user;
+        this.magazine = magazine;
+        this.commentContent = commentContent;
+        this.parent = parent;
+        this.commentStatus = CommentStatus.ACTIVE; // 기본값 설정
+    }
 }
