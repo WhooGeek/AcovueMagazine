@@ -46,6 +46,14 @@ public class Magazine {
         this.magazineContent = magazineContent;
     }
 
+    public void updateTitle(String title) {
+        this.magazineTitle = title;
+    }
+
+    public void updateContent(String content) {
+        this.magazineContent = content;
+    }
+
 
 
 }
