@@ -43,4 +43,13 @@ public class CommentController {
 
         return ResponseUtil.successResponse("댓글을 성공적으로 수정하였습니다.",comment).getBody();
     }
+
+    //댓글, 대댓글 삭제
+    @DeleteMapping("/delete/{magazineId}/{commentSeq}")
+    public ApiResponse<?> deleteComment(@PathVariable Long magazineId, @PathVariable Long commentSeq, @RequestBody CommentReqDTO commentReqDTO){
+
+        CommentResDTO comment = commentService.deleteComment(magazineId, commentSeq, commentReqDTO);
+
+        return ResponseUtil.successResponse("댓글을 성공적으로 삭제하였습니다.",comment).getBody();
+    }
 }
