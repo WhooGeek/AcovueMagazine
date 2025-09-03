@@ -56,7 +56,7 @@ public class CommentService {
         return result;
     }
 
-    // 댓글 등록
+    // 댓글 + 대댓글 등록
     @Transactional
     public CommentResDTO createComment(Long magazineId, CommentReqDTO commentReqDTO) {
 
@@ -81,7 +81,7 @@ public class CommentService {
         return CommentResDTO.fromEntity(comment);
     }
 
-    // 댓글 수정
+    // 댓글 + 대댓글 수정
     @Transactional
     public CommentResDTO updateComment(Long magazineId, Long commentSeq, CommentReqDTO commentReqDTO) {
 
@@ -109,5 +109,32 @@ public class CommentService {
         }
 
         return CommentResDTO.fromEntity(comment);
+    }
+
+    // 댓글 + 대댓글 삭제
+    @Transactional
+    public CommentResDTO deleteComment(Long magazineId, Long commentSeq, CommentReqDTO commentReqDTO) {
+
+        // 유저 조회
+        Users users = usersRepository.findById(commentReqDTO.getUserSeq())
+                .orElseThrow(() -> new EntityNotFoundException("해당 유저를 찾을 수 없습니다. ID = " + commentReqDTO.getUserSeq()) );
+
+        // 매거진 조회
+        Magazine magazine = magazineRepository.findById(magazineId)
+                .orElseThrow(() -> new EntityNotFoundException("해당 매거진을 찾을 수 없습니다. ID = " + magazineId));
+
+        // 댓글 조회
+        Comment comment = commentRepository.findById(commentSeq)
+                .orElseThrow(() -> new EntityNotFoundException("해당 댓글을 찾을 수 없습니다." + commentReqDTO.getCommentSeq()));
+
+        if(comment.getUser().getUserRoll() != UserRoll.ADMIN ||
+            users.getUserSeq() == comment.getUser().getUserSeq()) {
+            commentRepository.delete(comment);
+        } else{
+            throw new AccessDeniedException("삭제 권한이 없습니다.");
+        }
+
+        return CommentResDTO.fromEntity(comment);
+
     }
 }
