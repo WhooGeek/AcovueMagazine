@@ -1,7 +1,13 @@
 package com.AcovueMagazine.Like.Service;
 
+import com.AcovueMagazine.Comment.DTO.CommentResDTO;
+import com.AcovueMagazine.Comment.Entity.Comment;
+import com.AcovueMagazine.Comment.Respository.CommentRepository;
+import com.AcovueMagazine.Like.DTO.CommentLikeResDTO;
 import com.AcovueMagazine.Like.DTO.MagazineLikeResDTO;
+import com.AcovueMagazine.Like.Entity.CommentLike;
 import com.AcovueMagazine.Like.Entity.MagazineLike;
+import com.AcovueMagazine.Like.Respository.CommentLikeRepository;
 import com.AcovueMagazine.Like.Respository.MagazineLikeRepository;
 import com.AcovueMagazine.Magazine.Entity.Magazine;
 import com.AcovueMagazine.Magazine.Repository.MagazineRepository;
@@ -20,7 +26,9 @@ public class LikeService {
 
     private final UsersRepository usersRepository;
     private final MagazineLikeRepository magazineLikeRepository;
+    private final CommentLikeRepository commentLikeRepository;
     private final MagazineRepository magazineRepository;
+    private final CommentRepository commentRepository;
 
     // 매거진 좋아요 등록
     @Transactional
@@ -47,4 +55,30 @@ public class LikeService {
         return MagazineLikeResDTO.fromEntity(like);
     }
 
+
+    // 댓글 좋아요 토글 기능
+    @Transactional
+    public CommentLikeResDTO toggleCommentLike(Long commentSeq, Long userSeq) {
+
+        Users user = usersRepository.findById(userSeq)
+                .orElseThrow(() -> new EntityNotFoundException("해당 유저를 찾을 수 없습니다." + userSeq));
+
+        Comment comment = commentRepository.findById(commentSeq)
+                .orElseThrow(() -> new EntityNotFoundException("해당 댓글을 찾을 수 없습니다." + commentSeq));
+
+        Optional<CommentLike> existing = commentLikeRepository.findByUserAndComment(user, comment);
+
+        CommentLike like;
+        if(existing.isPresent()){
+            // 좋아요 취소
+            commentLikeRepository.delete(existing.get());
+
+            like = null;
+        }else{
+            // 좋아요 등록
+            like = commentLikeRepository.save(CommentLike.create(user, comment));
+        }
+
+        return CommentLikeResDTO.fromEntity(like);
+    }
 }
