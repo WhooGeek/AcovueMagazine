@@ -15,6 +15,7 @@ import java.util.ArrayList;
 public class CommentReqDTO {
 
     private Long userSeq;
+    private Long commentSeq;
     private String commentContent;
     private Long magazineSeq;
     private Long parentSeq;
@@ -26,5 +27,9 @@ public class CommentReqDTO {
         commentDTO.setParentSeq(comment.getParent() != null ? comment.getParent().getCommentSeq() : null);
         commentDTO.setChildren(new ArrayList<>());
         return commentDTO;
+    }
+
+    public void updateTitle(String commentContent) {
+        this.commentContent = commentContent;
     }
 }
