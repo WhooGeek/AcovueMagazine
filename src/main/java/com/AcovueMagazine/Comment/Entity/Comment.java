@@ -50,4 +50,8 @@ public class Comment {
         this.parent = parent;
         this.commentStatus = CommentStatus.ACTIVE; // 기본값 설정
     }
+
+    public void updateContent(String commentContent) {
+        this.commentContent = commentContent;
+    }
 }

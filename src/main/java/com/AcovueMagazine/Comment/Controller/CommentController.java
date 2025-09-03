@@ -34,4 +34,13 @@ public class CommentController {
 
         return ResponseUtil.successResponse("댓글을 성공적으로 조회하였습니다.", comment).getBody();
     }
+
+    //댓글, 대댓글 수정
+    @PutMapping("/update/{magazineId}/{commentSeq}")
+    public ApiResponse<?> updateComment(@PathVariable Long magazineId, @PathVariable Long commentSeq, @RequestBody CommentReqDTO commentReqDTO){
+
+        CommentResDTO comment = commentService.updateComment(magazineId, commentSeq, commentReqDTO);
+
+        return ResponseUtil.successResponse("댓글을 성공적으로 수정하였습니다.",comment).getBody();
+    }
 }
