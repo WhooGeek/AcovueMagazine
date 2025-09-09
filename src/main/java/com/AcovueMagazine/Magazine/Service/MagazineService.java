@@ -110,7 +110,17 @@ public class MagazineService {
         return MagazineResDTO.fromEntity(magazine);
     }
 
-    // 매거진 삭제 기능
+    /**
+     * Deletes a magazine by ID if the requesting user is authorized and returns the deleted magazine as a DTO.
+     *
+     * If the current user is the magazine owner or has the ADMIN role, the magazine is removed from the repository.
+     *
+     * @param magazineId   ID of the magazine to delete
+     * @param currentUsers the user performing the deletion; used for authorization (must be owner or ADMIN)
+     * @return a MagazineResDTO representing the deleted magazine
+     * @throws javax.persistence.EntityNotFoundException if no magazine exists with the given ID
+     * @throws org.springframework.security.access.AccessDeniedException if the requesting user is not authorized to delete the magazine
+     */
     @Transactional
     public MagazineResDTO deleteMagazine(Long magazineId, Users currentUsers) {
         Magazine magazine = magazineRepository.findById(magazineId)
@@ -128,6 +138,19 @@ public class MagazineService {
         return MagazineResDTO.fromEntity(magazine);
     }
 
+    /**
+     * Searches magazines by keyword and optional registration-date range, returning DTOs ordered by registration date.
+     *
+     * The search matches the keyword against title or content and filters by registration date between
+     * `start` and `end` (if provided). Results are sorted by `regDate` descending when `newestFirst` is true,
+     * otherwise ascending.
+     *
+     * @param keyword     text to match against magazine title or content; null or empty matches all
+     * @param start       start of the registration-date range (inclusive); may be null to omit lower bound
+     * @param end         end of the registration-date range (inclusive); may be null to omit upper bound
+     * @param newestFirst if true, sort results by `regDate` descending; if false, sort ascending
+     * @return a list of MagazineResDTOs representing matched magazines (may be empty)
+     */
     public List<MagazineResDTO> searchMagzine(String keyword, LocalDateTime start, LocalDateTime end, boolean newestFirst) {
         Specification<Magazine> spec = Specification
                 .where(MagazineSpecification.titleOrContentContains(keyword))

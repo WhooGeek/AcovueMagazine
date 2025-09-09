@@ -11,6 +11,13 @@ import java.util.List;
 public interface MagazineRepository extends JpaRepository<Magazine, Long> {
 
 
-    List<Magazine> findAll(Specification<Magazine> spec, Sort sort);
+    /**
+ * Retrieves all Magazine entities that match the given specification, applying the provided sort order.
+ *
+ * @param spec specification defining filtering criteria; may be {@code null} to match all entities
+ * @param sort sort order to apply to the results; may be {@code null} or unsorted
+ * @return a list of Magazine entities matching the specification in the requested order (empty if none)
+ */
+List<Magazine> findAll(Specification<Magazine> spec, Sort sort);
 
 }
