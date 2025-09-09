@@ -8,8 +8,10 @@ import com.AcovueMagazine.Magazine.DTO.MagazineResDTO;
 import com.AcovueMagazine.Magazine.Service.MagazineService;
 import com.AcovueMagazine.User.Entity.Users;
 import lombok.RequiredArgsConstructor;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @RestController
@@ -19,7 +21,35 @@ public class MagazineController {
 
     private final MagazineService magazineService;
 
-    // 매거진 조회
+    /**
+     * Searches magazines matching the optional criteria and returns the results wrapped in an ApiResponse.
+     *
+     * <p>Searches by an optional text keyword and an optional date-time range (start/end). Date-time
+     * parameters are parsed using ISO-8601 date-time format. Results are ordered by creation date;
+     * set {@code newestFirst=false} to return oldest-first.</p>
+     *
+     * @param keyword     optional text to match against magazine fields (title/content/etc.)
+     * @param start       optional inclusive start of the date-time range (ISO-8601)
+     * @param end         optional inclusive end of the date-time range (ISO-8601)
+     * @param newestFirst if true (default) sort results newest-first; if false sort oldest-first
+     * @return an ApiResponse whose data is a List of MagazineResDTO matching the search criteria
+     */
+    @GetMapping("/search")
+    public ApiResponse<?> searchMagazine(
+            @RequestParam(required = false) String keyword,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime start,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime end,
+            @RequestParam(defaultValue = "true") boolean newestFirst
+    ){
+        List<MagazineResDTO> searchResults = magazineService.searchMagzine(keyword, start, end, newestFirst);
+        return ResponseUtil.successResponse("매거진 검색을 성공적으로 수행하였습니다.", searchResults).getBody();
+    }
+
+    /**
+     * Retrieves all magazines and wraps them in a success ApiResponse.
+     *
+     * @return an ApiResponse containing a List of MagazineResDTO on success
+     */
     @GetMapping("/find/all")
     public ApiResponse<?> getMagazineList() {
         List<MagazineResDTO> magazines = magazineService.getAllMagazines();
