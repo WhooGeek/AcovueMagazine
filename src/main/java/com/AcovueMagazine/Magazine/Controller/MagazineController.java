@@ -8,8 +8,10 @@ import com.AcovueMagazine.Magazine.DTO.MagazineResDTO;
 import com.AcovueMagazine.Magazine.Service.MagazineService;
 import com.AcovueMagazine.User.Entity.Users;
 import lombok.RequiredArgsConstructor;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @RestController
@@ -18,6 +20,18 @@ import java.util.List;
 public class MagazineController {
 
     private final MagazineService magazineService;
+
+    // 매거진 검색
+    @GetMapping("/search")
+    public ApiResponse<?> searchMagazine(
+            @RequestParam(required = false) String keyword,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime start,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime end,
+            @RequestParam(defaultValue = "true") boolean newestFirst
+    ){
+        List<MagazineResDTO> searchResults = magazineService.searchMagzine(keyword, start, end, newestFirst);
+        return ResponseUtil.successResponse("매거진 검색을 성공적으로 수행하였습니다.", searchResults).getBody();
+    }
 
     // 매거진 조회
     @GetMapping("/find/all")

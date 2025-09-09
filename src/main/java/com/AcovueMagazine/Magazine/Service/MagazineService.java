@@ -5,6 +5,7 @@ import com.AcovueMagazine.Magazine.DTO.MagazineReqDTO;
 import com.AcovueMagazine.Magazine.Entity.Magazine;
 import com.AcovueMagazine.Magazine.DTO.MagazineResDTO;
 import com.AcovueMagazine.Magazine.Repository.MagazineRepository;
+import com.AcovueMagazine.Magazine.Specification.MagazineSpecification;
 import com.AcovueMagazine.User.Entity.UserRoll;
 import com.AcovueMagazine.User.Entity.UserStatus;
 import com.AcovueMagazine.User.Entity.Users;
@@ -13,8 +14,12 @@ import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
+
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -123,4 +128,29 @@ public class MagazineService {
         return MagazineResDTO.fromEntity(magazine);
     }
 
+    public List<MagazineResDTO> searchMagzine(String keyword, LocalDateTime start, LocalDateTime end, boolean newestFirst) {
+        Specification<Magazine> spec = Specification
+                .where(MagazineSpecification.titleOrContentContains(keyword))
+                .and(MagazineSpecification.regDateBetween(start, end));
+
+        Sort sort = newestFirst ? Sort.by("regDate").descending() : Sort.by("regDate").ascending();
+
+        List<Magazine> searchMagzines = magazineRepository.findAll(spec, sort);
+
+
+        return searchMagzines.stream()
+                .map(magazine -> new MagazineResDTO(
+                        magazine.getUser().getUserSeq(),
+                        magazine.getUser().getUserName(),// 엔티티 필드에 맞춰서
+                        magazine.getUser().getUserNickname(),
+                        magazine.getUser().getUserEmail(),
+                        magazine.getUser().getUserStatus(),
+                        magazine.getMagazineSeq(),
+                        magazine.getMagazineTitle(),
+                        magazine.getMagazineContent(),
+                        magazine.getRegDate(),
+                        magazine.getModDate()
+                ))
+                .collect(Collectors.toList());
+    }
 }
