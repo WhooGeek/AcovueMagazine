@@ -4,6 +4,7 @@ import com.AcovueMagazine.Common.Response.ApiResponse;
 import com.AcovueMagazine.Common.Response.ResponseUtil;
 import com.AcovueMagazine.Like.DTO.CommentLikeCountResDTO;
 import com.AcovueMagazine.Like.DTO.CommentLikeResDTO;
+import com.AcovueMagazine.Like.DTO.MagazineLikeCountResDTO;
 import com.AcovueMagazine.Like.DTO.MagazineLikeResDTO;
 import com.AcovueMagazine.Like.Service.LikeService;
 import lombok.RequiredArgsConstructor;
@@ -41,6 +42,14 @@ public class LikeController {
         CommentLikeCountResDTO commentLikeCount = likeService.commentLikeCount(commentSeq);
 
         return ResponseUtil.successResponse("댓글 좋아요를 성공적으로 조회하였습니다.", commentLikeCount).getBody();
+    }
+
+    // 매거진 좋아요 조회 기능
+    @GetMapping("magazine/{magazineSeq}")
+    public ApiResponse<?> getMagazineLike(@PathVariable Long magazineSeq){
+        MagazineLikeCountResDTO magazineLikeCount = likeService.magazineLikeCount(magazineSeq);
+
+        return ResponseUtil.successResponse("매거진 좋아요를 성공적으로 조회하였습니다.", magazineLikeCount).getBody();
     }
 
 

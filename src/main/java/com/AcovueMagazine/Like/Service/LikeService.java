@@ -5,6 +5,7 @@ import com.AcovueMagazine.Comment.Entity.Comment;
 import com.AcovueMagazine.Comment.Respository.CommentRepository;
 import com.AcovueMagazine.Like.DTO.CommentLikeCountResDTO;
 import com.AcovueMagazine.Like.DTO.CommentLikeResDTO;
+import com.AcovueMagazine.Like.DTO.MagazineLikeCountResDTO;
 import com.AcovueMagazine.Like.DTO.MagazineLikeResDTO;
 import com.AcovueMagazine.Like.Entity.CommentLike;
 import com.AcovueMagazine.Like.Entity.MagazineLike;
@@ -93,5 +94,18 @@ public class LikeService {
         Long likeCount = commentLikeRepository.countByComment_CommentSeq(commentSeq);
 
         return CommentLikeCountResDTO.from(commentSeq, likeCount);
+    }
+
+    // 매거진 좋아요 조회 기능
+    @Transactional
+    public MagazineLikeCountResDTO magazineLikeCount(Long magazineSeq) {
+
+        Magazine magazine = magazineRepository.findById(magazineSeq)
+                .orElseThrow(() -> new EntityNotFoundException("해당 매거진을 찾을 수 없습니다." + magazineSeq));
+
+        Long magazineLikeCount = magazineLikeRepository.countByMagazine_MagazineSeq(magazineSeq);
+
+        return MagazineLikeCountResDTO.from(magazineSeq, magazineLikeCount);
+
     }
 }
