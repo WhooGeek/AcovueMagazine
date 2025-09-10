@@ -7,11 +7,13 @@ import com.AcovueMagazine.Like.DTO.CommentLikeResDTO;
 import com.AcovueMagazine.Like.DTO.MagazineLikeCountResDTO;
 import com.AcovueMagazine.Like.DTO.MagazineLikeResDTO;
 import com.AcovueMagazine.Like.Service.LikeService;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
+@Tag(name = "좋아요 API", description = "매거진과 댓글에 대한 좋아요 토글, 매거진과 댓글에 대한 좋아요 조회 기능이 있습니다.")
 @RequestMapping("/api/like")
 public class LikeController {
 
