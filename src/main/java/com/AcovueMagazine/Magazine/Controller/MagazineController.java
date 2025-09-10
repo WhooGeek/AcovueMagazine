@@ -7,6 +7,7 @@ import com.AcovueMagazine.Magazine.DTO.MagazineReqDTO;
 import com.AcovueMagazine.Magazine.DTO.MagazineResDTO;
 import com.AcovueMagazine.Magazine.Service.MagazineService;
 import com.AcovueMagazine.User.Entity.Users;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.*;
@@ -15,8 +16,9 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/magazine")
 @RequiredArgsConstructor
+@Tag(name = "매거진 API", description = "매거진 검색, 조회, 상세조회, 등록, 삭제, 수정의 기능을 가지고 있습니다")
+@RequestMapping("/api/magazine")
 public class MagazineController {
 
     private final MagazineService magazineService;

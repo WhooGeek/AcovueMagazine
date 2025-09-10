@@ -5,14 +5,16 @@ import com.AcovueMagazine.Comment.DTO.CommentResDTO;
 import com.AcovueMagazine.Comment.Service.CommentService;
 import com.AcovueMagazine.Common.Response.ApiResponse;
 import com.AcovueMagazine.Common.Response.ResponseUtil;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/magazine/comment")
 @RequiredArgsConstructor
+@Tag(name = "댓글 API", description = "댓글+대댓글 조회, 등록, 수정, 삭제의 기능이 있습니다.")
+@RequestMapping("/api/magazine/comment")
 public class CommentController {
 
     private final CommentService commentService;
