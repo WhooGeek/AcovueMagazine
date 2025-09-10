@@ -2,6 +2,7 @@ package com.AcovueMagazine.Like.Controller;
 
 import com.AcovueMagazine.Common.Response.ApiResponse;
 import com.AcovueMagazine.Common.Response.ResponseUtil;
+import com.AcovueMagazine.Like.DTO.CommentLikeCountResDTO;
 import com.AcovueMagazine.Like.DTO.CommentLikeResDTO;
 import com.AcovueMagazine.Like.DTO.MagazineLikeResDTO;
 import com.AcovueMagazine.Like.Service.LikeService;
@@ -31,6 +32,15 @@ public class LikeController {
         CommentLikeResDTO like = likeService.toggleCommentLike(commentSeq, userSeq);
 
         return ResponseUtil.successResponse("댓글 좋아요를 성공적으로 등록/삭제하였습니다.", like).getBody();
+    }
+
+    // 댓글 조아요 조회 기능
+    @GetMapping("comment/{commentSeq}")
+    public ApiResponse<?> getCommentLike(@PathVariable Long commentSeq){
+
+        CommentLikeCountResDTO commentLikeCount = likeService.commentLikeCount(commentSeq);
+
+        return ResponseUtil.successResponse("댓글 좋아요를 성공적으로 조회하였습니다.", commentLikeCount).getBody();
     }
 
 

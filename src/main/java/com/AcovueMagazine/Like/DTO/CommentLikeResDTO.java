@@ -1,5 +1,6 @@
 package com.AcovueMagazine.Like.DTO;
 
+import com.AcovueMagazine.Comment.Entity.Comment;
 import com.AcovueMagazine.Like.Entity.CommentLike;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -16,6 +17,7 @@ public class CommentLikeResDTO {
     private Long userSeq;
     private Long commentSeq;
     private boolean liked;
+
 
     public static CommentLikeResDTO fromEntity(CommentLike like) {
         if (like == null) {
