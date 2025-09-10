@@ -3,6 +3,7 @@ package com.AcovueMagazine.Like.Service;
 import com.AcovueMagazine.Comment.DTO.CommentResDTO;
 import com.AcovueMagazine.Comment.Entity.Comment;
 import com.AcovueMagazine.Comment.Respository.CommentRepository;
+import com.AcovueMagazine.Like.DTO.CommentLikeCountResDTO;
 import com.AcovueMagazine.Like.DTO.CommentLikeResDTO;
 import com.AcovueMagazine.Like.DTO.MagazineLikeResDTO;
 import com.AcovueMagazine.Like.Entity.CommentLike;
@@ -80,5 +81,17 @@ public class LikeService {
         }
 
         return CommentLikeResDTO.fromEntity(like);
+    }
+
+    // 댓글 좋아요 조회 기능
+    @Transactional
+    public CommentLikeCountResDTO commentLikeCount(Long commentSeq) {
+
+        Comment comment = commentRepository.findById(commentSeq)
+                .orElseThrow(() -> new EntityNotFoundException("해당 댓글을 찾을 수 없습니다." + commentSeq));
+
+        Long likeCount = commentLikeRepository.countByComment_CommentSeq(commentSeq);
+
+        return CommentLikeCountResDTO.from(commentSeq, likeCount);
     }
 }
