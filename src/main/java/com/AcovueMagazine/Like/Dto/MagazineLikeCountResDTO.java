@@ -1,4 +1,4 @@
-package com.AcovueMagazine.Like.DTO;
+package com.AcovueMagazine.Like.Dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

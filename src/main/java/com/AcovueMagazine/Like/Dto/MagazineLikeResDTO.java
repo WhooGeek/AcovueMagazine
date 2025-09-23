@@ -1,4 +1,4 @@
-package com.AcovueMagazine.Like.DTO;
+package com.AcovueMagazine.Like.Dto;
 
 import com.AcovueMagazine.Like.Entity.MagazineLike;
 import lombok.AllArgsConstructor;
@@ -23,7 +23,7 @@ public class MagazineLikeResDTO {
         }
         return new MagazineLikeResDTO(
                 like.getLikeSeq(),
-                like.getUser().getUserSeq(),
+                like.getMembers().getMember_seq(),
                 like.getMagazine().getMagazineSeq(),
                 true
         );

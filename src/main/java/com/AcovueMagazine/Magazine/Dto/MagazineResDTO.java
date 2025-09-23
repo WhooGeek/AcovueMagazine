@@ -1,4 +1,4 @@
-package com.AcovueMagazine.Magazine.DTO;
+package com.AcovueMagazine.Magazine.Dto;
 
 import com.AcovueMagazine.Magazine.Entity.Magazine;
 import com.AcovueMagazine.Member.Entity.MemberStatus;
@@ -15,11 +15,11 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class MagazineResDTO {
 
-    private Long userSeq;
-    private String userName;
-    private String userNickname;
-    private String userEmail;
-    private MemberStatus userStatus;
+    private Long memberSeq;
+    private String memberName;
+    private String memberNickname;
+    private String memberEmail;
+    private MemberStatus memberStatus;
     private Long magazineSeq;
     private String magazineTitle;
     private String magazineContent;
@@ -30,11 +30,11 @@ public class MagazineResDTO {
     // Entity -> DTO
     public static MagazineResDTO fromEntity(Magazine magazine) {
         return new MagazineResDTO(
-                magazine.getUser().getUserSeq(),
-                magazine.getUser().getUserName(),
-                magazine.getUser().getUserNickname(),
-                magazine.getUser().getUserEmail(),
-                magazine.getUser().getUserStatus(),
+                magazine.getMembers().getMember_seq(),
+                magazine.getMembers().getMemberName(),
+                magazine.getMembers().getMemberNickname(),
+                magazine.getMembers().getMemberEmail(),
+                magazine.getMembers().getMemberStatus(),
                 magazine.getMagazineSeq(),
                 magazine.getMagazineTitle(),
                 magazine.getMagazineContent(),

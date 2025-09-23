@@ -1,13 +1,15 @@
 package com.AcovueMagazine.Magazine.Service;
 
 
-import com.AcovueMagazine.Magazine.DTO.MagazineReqDTO;
+import com.AcovueMagazine.Magazine.Dto.MagazineReqDTO;
 import com.AcovueMagazine.Magazine.Entity.Magazine;
-import com.AcovueMagazine.Magazine.DTO.MagazineResDTO;
+import com.AcovueMagazine.Magazine.Dto.MagazineResDTO;
 import com.AcovueMagazine.Magazine.Repository.MagazineRepository;
 import com.AcovueMagazine.Magazine.Specification.MagazineSpecification;
-import com.AcovueMagazine.Member.Entity.UserRoll;
+import com.AcovueMagazine.Member.Entity.MemberRole;
+import com.AcovueMagazine.Member.Entity.Members;
 import com.AcovueMagazine.Member.Entity.MemberStatus;
+import com.AcovueMagazine.Member.Repository.MembersRepository;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -27,7 +29,7 @@ import java.util.stream.Collectors;
 public class MagazineService {
 
     private final MagazineRepository magazineRepository;
-    private final UsersRepository usersRepository;
+    private final MembersRepository membersRepository;
 
     // 매거진 전체 조회
     @Transactional
@@ -37,11 +39,11 @@ public class MagazineService {
 
         return magazines.stream()
                 .map(magazine -> new MagazineResDTO(
-                        magazine.getUser().getUserSeq(),
-                        magazine.getUser().getUserName(),// 엔티티 필드에 맞춰서
-                        magazine.getUser().getUserNickname(),
-                        magazine.getUser().getUserEmail(),
-                        magazine.getUser().getUserStatus(),
+                        magazine.getMembers().getMember_seq(),
+                        magazine.getMembers().getMemberName(),// 엔티티 필드에 맞춰서
+                        magazine.getMembers().getMemberNickname(),
+                        magazine.getMembers().getMemberEmail(),
+                        magazine.getMembers().getMemberStatus(),
                         magazine.getMagazineSeq(),
                         magazine.getMagazineTitle(),
                         magazine.getMagazineContent(),
@@ -57,7 +59,7 @@ public class MagazineService {
         Magazine magazine = magazineRepository.findById(magazineId)
                 .orElseThrow(() -> new EntityNotFoundException("해당 매거진을 찾을 수 없습니다. ID = " + magazineId));
 
-        if (magazine.getUser().getUserStatus() == MemberStatus.INACTIVE) {
+        if (magazine.getMembers().getMemberStatus() == MemberStatus.INACTIVE) {
             throw new IllegalStateException("비활성화된 유저입니다.");
         }
 
@@ -68,10 +70,10 @@ public class MagazineService {
     @Transactional
     public MagazineResDTO createMagazine(MagazineReqDTO magazineReqDTO) {
 
-        Users users = usersRepository.findById(magazineReqDTO.getUserSeq())
+        Members members = membersRepository.findById(magazineReqDTO.getMemberSeq())
                 .orElseThrow(()-> new EntityNotFoundException("해당 유저를 찾을 수 없습니다."));
 
-        Magazine magazine = new Magazine(users, magazineReqDTO.getMagazine_title(), magazineReqDTO.getMagazine_content());
+        Magazine magazine = new Magazine(members, magazineReqDTO.getMagazine_title(), magazineReqDTO.getMagazine_content());
 
         magazine = magazineRepository.save(magazine);
 
@@ -85,12 +87,12 @@ public class MagazineService {
         Magazine magazine = magazineRepository.findById(magazineId)
                 .orElseThrow(() -> new EntityNotFoundException("해당 매거진을 찾을 수 없습니다. ID = " + magazineId));
 
-        Users users = usersRepository.findById(magazineReqDTO.getUserSeq())
+        Members members = membersRepository.findById(magazineReqDTO.getMemberSeq())
                 .orElseThrow(()-> new EntityNotFoundException("해당 유저를 찾을 수 없습니다."));
 
         // 권한 체크
-        if (!magazine.getUser().getUserSeq().equals(users.getUserSeq()) &&
-                users.getUserRoll() != UserRoll.ADMIN) {
+        if (!magazine.getMembers().getMember_seq().equals(members.getMember_seq()) &&
+                members.getMemberRole() != MemberRole.ADMIN) {
             throw new AccessDeniedException("수정 권한이 없습니다.");
         }
 
@@ -108,25 +110,15 @@ public class MagazineService {
         return MagazineResDTO.fromEntity(magazine);
     }
 
-    /**
-     * Deletes a magazine by ID if the requesting user is authorized and returns the deleted magazine as a DTO.
-     *
-     * If the current user is the magazine owner or has the ADMIN role, the magazine is removed from the repository.
-     *
-     * @param magazineId   ID of the magazine to delete
-     * @param currentUsers the user performing the deletion; used for authorization (must be owner or ADMIN)
-     * @return a MagazineResDTO representing the deleted magazine
-     * @throws javax.persistence.EntityNotFoundException if no magazine exists with the given ID
-     * @throws org.springframework.security.access.AccessDeniedException if the requesting user is not authorized to delete the magazine
-     */
+
     @Transactional
-    public MagazineResDTO deleteMagazine(Long magazineId, Users currentUsers) {
+    public MagazineResDTO deleteMagazine(Long magazineId, Members currentMembers) {
         Magazine magazine = magazineRepository.findById(magazineId)
                 .orElseThrow(() -> new EntityNotFoundException("해당 매거진을 찾을 수 없습니다. ID = " + magazineId));
 
 
-        if (magazine.getUser().getUserSeq().equals(currentUsers.getUserSeq()) ||
-            currentUsers.getUserRoll() == UserRoll.ADMIN) {
+        if (magazine.getMembers().getMember_seq().equals(currentMembers.getMember_seq()) ||
+                currentMembers.getMemberRole() == MemberRole.ADMIN) {
             magazineRepository.delete(magazine);
         } else {
             throw new org.springframework.security.access.AccessDeniedException("삭제 권한이 없습니다.");
@@ -156,16 +148,16 @@ public class MagazineService {
 
         Sort sort = newestFirst ? Sort.by("regDate").descending() : Sort.by("regDate").ascending();
 
-        List<Magazine> searchMagzines = magazineRepository.findAll(spec, sort);
+        List<Magazine> searchMagazines = magazineRepository.findAll(spec, sort);
 
 
-        return searchMagzines.stream()
+        return searchMagazines.stream()
                 .map(magazine -> new MagazineResDTO(
-                        magazine.getUser().getUserSeq(),
-                        magazine.getUser().getUserName(),// 엔티티 필드에 맞춰서
-                        magazine.getUser().getUserNickname(),
-                        magazine.getUser().getUserEmail(),
-                        magazine.getUser().getUserStatus(),
+                        magazine.getMembers().getMember_seq(),
+                        magazine.getMembers().getMemberName(),// 엔티티 필드에 맞춰서
+                        magazine.getMembers().getMemberNickname(),
+                        magazine.getMembers().getMemberEmail(),
+                        magazine.getMembers().getMemberStatus(),
                         magazine.getMagazineSeq(),
                         magazine.getMagazineTitle(),
                         magazine.getMagazineContent(),

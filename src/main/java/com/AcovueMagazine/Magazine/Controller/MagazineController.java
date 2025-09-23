@@ -3,9 +3,10 @@ package com.AcovueMagazine.Magazine.Controller;
 
 import com.AcovueMagazine.Common.Response.ApiResponse;
 import com.AcovueMagazine.Common.Response.ResponseUtil;
-import com.AcovueMagazine.Magazine.DTO.MagazineReqDTO;
-import com.AcovueMagazine.Magazine.DTO.MagazineResDTO;
+import com.AcovueMagazine.Magazine.Dto.MagazineReqDTO;
+import com.AcovueMagazine.Magazine.Dto.MagazineResDTO;
 import com.AcovueMagazine.Magazine.Service.MagazineService;
+import com.AcovueMagazine.Member.Entity.Members;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.*;
@@ -78,8 +79,8 @@ public class MagazineController {
 
     // 매거진 삭제
     @DeleteMapping("/delete/{magazineId}")
-    public ApiResponse<?> deleteMagazine(@PathVariable Long magazineId, @RequestBody Users users) {
-        MagazineResDTO magazine = magazineService.deleteMagazine(magazineId, users);
+    public ApiResponse<?> deleteMagazine(@PathVariable Long magazineId, @RequestBody Members members) {
+        MagazineResDTO magazine = magazineService.deleteMagazine(magazineId, members);
 
         return ResponseUtil.successResponse("매거진 삭제를 성공적으로 수행하였습니다", magazine).getBody();
     }

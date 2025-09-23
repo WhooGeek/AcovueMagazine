@@ -1,6 +1,5 @@
-package com.AcovueMagazine.Like.DTO;
+package com.AcovueMagazine.Like.Dto;
 
-import com.AcovueMagazine.Comment.Entity.Comment;
 import com.AcovueMagazine.Like.Entity.CommentLike;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -25,7 +24,7 @@ public class CommentLikeResDTO {
         }
         return new CommentLikeResDTO(
                 like.getLikeSeq(),
-                like.getUser().getUserSeq(),
+                like.getMembers().getMember_seq(),
                 like.getComment().getCommentSeq(),
                 true
         );

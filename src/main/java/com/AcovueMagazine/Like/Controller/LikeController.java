@@ -2,10 +2,10 @@ package com.AcovueMagazine.Like.Controller;
 
 import com.AcovueMagazine.Common.Response.ApiResponse;
 import com.AcovueMagazine.Common.Response.ResponseUtil;
-import com.AcovueMagazine.Like.DTO.CommentLikeCountResDTO;
-import com.AcovueMagazine.Like.DTO.CommentLikeResDTO;
-import com.AcovueMagazine.Like.DTO.MagazineLikeCountResDTO;
-import com.AcovueMagazine.Like.DTO.MagazineLikeResDTO;
+import com.AcovueMagazine.Like.Dto.CommentLikeCountResDTO;
+import com.AcovueMagazine.Like.Dto.CommentLikeResDTO;
+import com.AcovueMagazine.Like.Dto.MagazineLikeCountResDTO;
+import com.AcovueMagazine.Like.Dto.MagazineLikeResDTO;
 import com.AcovueMagazine.Like.Service.LikeService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;

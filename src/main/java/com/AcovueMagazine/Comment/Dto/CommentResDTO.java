@@ -1,4 +1,4 @@
-package com.AcovueMagazine.Comment.DTO;
+package com.AcovueMagazine.Comment.Dto;
 
 import com.AcovueMagazine.Comment.Entity.Comment;
 import lombok.AllArgsConstructor;
@@ -27,7 +27,7 @@ public class CommentResDTO {
         CommentResDTO commentResDTO = new CommentResDTO();
         commentResDTO.setCommentSeq(comment.getCommentSeq());
         commentResDTO.setCommentContent(comment.getCommentContent());
-        commentResDTO.setUserName(comment.getUser().getUserName());
+        commentResDTO.setUserName(comment.getMember().getMemberName());
         commentResDTO.setChildren(new ArrayList<>());
         return commentResDTO;
     }

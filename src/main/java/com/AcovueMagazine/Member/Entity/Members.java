@@ -7,24 +7,24 @@ import lombok.*;
 @Getter
 @NoArgsConstructor
 @Table(name = "members")
-public class Member {
+public class Members {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name="member_seq", nullable = false)
+    private Long member_seq;
+
     @Column(name="oauth_id", nullable = false)
     private Long oauth_id;
 
-    @Column(name = "oauth_id", nullable = false)
-    private String userId;
-
     @Column(name = "member_name", nullable = false)
-    private String userName;
+    private String memberName;
 
     @Column(name = "member_nickname", nullable = false)
-    private String userNickname;
+    private String memberNickname;
 
     @Column(name = "member_email", nullable = false)
-    private String userEmail;
+    private String memberEmail;
 
     @Column(name = "member_role", nullable = false)
     @Enumerated(EnumType.STRING)

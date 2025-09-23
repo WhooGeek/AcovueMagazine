@@ -1,4 +1,4 @@
-package com.AcovueMagazine.Comment.DTO;
+package com.AcovueMagazine.Comment.Dto;
 
 import com.AcovueMagazine.Comment.Entity.Comment;
 import lombok.AllArgsConstructor;

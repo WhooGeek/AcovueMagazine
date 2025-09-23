@@ -1,7 +1,7 @@
 package com.AcovueMagazine.Comment.Controller;
 
-import com.AcovueMagazine.Comment.DTO.CommentReqDTO;
-import com.AcovueMagazine.Comment.DTO.CommentResDTO;
+import com.AcovueMagazine.Comment.Dto.CommentReqDTO;
+import com.AcovueMagazine.Comment.Dto.CommentResDTO;
 import com.AcovueMagazine.Comment.Service.CommentService;
 import com.AcovueMagazine.Common.Response.ApiResponse;
 import com.AcovueMagazine.Common.Response.ResponseUtil;
