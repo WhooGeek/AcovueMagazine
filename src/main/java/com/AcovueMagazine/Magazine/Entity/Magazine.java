@@ -1,6 +1,5 @@
 package com.AcovueMagazine.Magazine.Entity;
 
-import com.AcovueMagazine.User.Entity.Users;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;

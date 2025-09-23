@@ -1,7 +1,6 @@
 package com.AcovueMagazine.Like.Entity;
 
 import com.AcovueMagazine.Comment.Entity.Comment;
-import com.AcovueMagazine.User.Entity.Users;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

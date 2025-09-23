@@ -2,7 +2,6 @@ package com.AcovueMagazine.Like.Respository;
 
 import com.AcovueMagazine.Comment.Entity.Comment;
 import com.AcovueMagazine.Like.Entity.CommentLike;
-import com.AcovueMagazine.User.Entity.Users;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;

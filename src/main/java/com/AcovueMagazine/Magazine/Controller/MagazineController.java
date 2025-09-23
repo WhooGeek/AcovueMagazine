@@ -6,7 +6,6 @@ import com.AcovueMagazine.Common.Response.ResponseUtil;
 import com.AcovueMagazine.Magazine.DTO.MagazineReqDTO;
 import com.AcovueMagazine.Magazine.DTO.MagazineResDTO;
 import com.AcovueMagazine.Magazine.Service.MagazineService;
-import com.AcovueMagazine.User.Entity.Users;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.*;

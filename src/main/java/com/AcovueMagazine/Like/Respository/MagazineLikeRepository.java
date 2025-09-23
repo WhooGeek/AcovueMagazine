@@ -2,7 +2,6 @@ package com.AcovueMagazine.Like.Respository;
 
 import com.AcovueMagazine.Like.Entity.MagazineLike;
 import com.AcovueMagazine.Magazine.Entity.Magazine;
-import com.AcovueMagazine.User.Entity.Users;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;

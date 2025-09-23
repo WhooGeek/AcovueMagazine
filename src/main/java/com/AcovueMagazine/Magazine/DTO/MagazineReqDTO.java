@@ -1,12 +1,9 @@
 package com.AcovueMagazine.Magazine.DTO;
 
-import com.AcovueMagazine.User.Entity.Users;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-
-import java.time.LocalDateTime;
 
 @Getter
 @Setter

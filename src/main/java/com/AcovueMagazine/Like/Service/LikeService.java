@@ -1,6 +1,5 @@
 package com.AcovueMagazine.Like.Service;
 
-import com.AcovueMagazine.Comment.DTO.CommentResDTO;
 import com.AcovueMagazine.Comment.Entity.Comment;
 import com.AcovueMagazine.Comment.Respository.CommentRepository;
 import com.AcovueMagazine.Like.DTO.CommentLikeCountResDTO;
@@ -13,8 +12,6 @@ import com.AcovueMagazine.Like.Respository.CommentLikeRepository;
 import com.AcovueMagazine.Like.Respository.MagazineLikeRepository;
 import com.AcovueMagazine.Magazine.Entity.Magazine;
 import com.AcovueMagazine.Magazine.Repository.MagazineRepository;
-import com.AcovueMagazine.User.Entity.Users;
-import com.AcovueMagazine.User.Repository.UsersRepository;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;

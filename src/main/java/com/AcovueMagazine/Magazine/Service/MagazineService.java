@@ -6,10 +6,8 @@ import com.AcovueMagazine.Magazine.Entity.Magazine;
 import com.AcovueMagazine.Magazine.DTO.MagazineResDTO;
 import com.AcovueMagazine.Magazine.Repository.MagazineRepository;
 import com.AcovueMagazine.Magazine.Specification.MagazineSpecification;
-import com.AcovueMagazine.User.Entity.UserRoll;
-import com.AcovueMagazine.User.Entity.UserStatus;
-import com.AcovueMagazine.User.Entity.Users;
-import com.AcovueMagazine.User.Repository.UsersRepository;
+import com.AcovueMagazine.Member.Entity.UserRoll;
+import com.AcovueMagazine.Member.Entity.MemberStatus;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -59,7 +57,7 @@ public class MagazineService {
         Magazine magazine = magazineRepository.findById(magazineId)
                 .orElseThrow(() -> new EntityNotFoundException("해당 매거진을 찾을 수 없습니다. ID = " + magazineId));
 
-        if (magazine.getUser().getUserStatus() == UserStatus.INACTIVE) {
+        if (magazine.getUser().getUserStatus() == MemberStatus.INACTIVE) {
             throw new IllegalStateException("비활성화된 유저입니다.");
         }
 

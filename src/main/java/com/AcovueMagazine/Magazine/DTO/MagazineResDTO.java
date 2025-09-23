@@ -1,8 +1,7 @@
 package com.AcovueMagazine.Magazine.DTO;
 
 import com.AcovueMagazine.Magazine.Entity.Magazine;
-import com.AcovueMagazine.User.Entity.UserStatus;
-import com.AcovueMagazine.User.Entity.Users;
+import com.AcovueMagazine.Member.Entity.MemberStatus;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -20,7 +19,7 @@ public class MagazineResDTO {
     private String userName;
     private String userNickname;
     private String userEmail;
-    private UserStatus userStatus;
+    private MemberStatus userStatus;
     private Long magazineSeq;
     private String magazineTitle;
     private String magazineContent;
