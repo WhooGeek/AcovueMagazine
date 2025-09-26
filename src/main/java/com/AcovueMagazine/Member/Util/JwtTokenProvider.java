@@ -2,6 +2,7 @@ package com.AcovueMagazine.Member.Util;
 
 import com.AcovueMagazine.Member.Config.JwtToken;
 import com.AcovueMagazine.Member.Dao.RedisDao;
+import com.AcovueMagazine.Member.Dto.MemberLoginDto;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
 import lombok.extern.slf4j.Slf4j;
@@ -28,29 +29,29 @@ import java.util.stream.Collectors;
 public class JwtTokenProvider {
 
     private final Key key;
-    private final UserDetailsService userDetailsService;
+
+//    private final UserDetailsService userDetailsService;
     private final RedisDao redisDao; // RefreshToken 저장을 위해 Redis 사용
 
     private static final String GRANT_TYPE = "Bearer";
 
-    @Value("${jwt.access-token.expire-time}") // 1000 * 60 * 60 * 24 = 1일
-    private long ACCESS_TOKEN_EXPIRE_TIME;
+    private static final long ACCESS_TOKEN_EXPIRE_TIME = 30 * 60 * 1000L;              // 30분
+    private static final long REFRESH_TOKEN_EXPIRE_TIME = 7 * 24 * 60 * 60 * 1000L;    // 7일
 
-    @Value("${jwt.refresh-token.expire-time}") // 1000 * 60 * 60 *  24 * 3 = 3일
-    private long REFRESH_TOKEN_EXPIRE_TIME;
 
     // yml 파일에서 secret 값 가져와서 secretKey 설정
-    public JwtTokenProvider(@Value("${jwt.secret}") String secretKey,
-                            UserDetailsService userDetailsService,
-                            RedisDao redisDao) {
+    public JwtTokenProvider(
+            @Value("${jwt.secret}")
+            String secretKey,
+            RedisDao redisDao) {
         byte[] keyBytes = Base64.getEncoder().encode(secretKey.getBytes());
         this.key = Keys.hmacShaKeyFor(keyBytes);
-        this.userDetailsService = userDetailsService;
+//        this.userDetailsService = userDetailsService;
         this.redisDao = redisDao;
     }
 
     // 인증 객체 가지고 Token(Access, Refresh) 생성하는 메서드
-    public JwtToken generateToken(Authentication authentication){
+    public MemberLoginDto.TokenResDto generateToken(Authentication authentication){
         //권한 가져오기
         // JWT 토큰의 claims에 포함되어 사용자의 권한 정보를 저장
         String authorities = authentication.getAuthorities().stream() // Authoritication객체에서 사용자 권한 목록 가져오기
@@ -72,10 +73,11 @@ public class JwtTokenProvider {
         // 만료 되면 자동 삭제
         redisDao.setValues(username, refreshToken, Duration.ofMillis(REFRESH_TOKEN_EXPIRE_TIME));
 
-        return JwtToken.builder()
+        return MemberLoginDto.TokenResDto.builder()
                 .grantType(GRANT_TYPE) // Bearer
                 .accessToken(accessToken)
                 .refreshToken(refreshToken)
+                .refreshTokenExpirationTime(REFRESH_TOKEN_EXPIRE_TIME)
                 .build();
     }
 
@@ -97,30 +99,30 @@ public class JwtTokenProvider {
     }
 
     // 이건 리프래쉬 토큰 재발급, 재발급 된 리프래쉬 토큰 다시 레디스에 저장하는 로직
-    public JwtToken generateTokenWithRefreshToken(String username){
-        long now = (new Date()).getTime();
-        // AccessToken 생성
-        Date accessTokenExpire = new Date(now + ACCESS_TOKEN_EXPIRE_TIME);
-        // UserDetailService로 유저 정보 가져오기
-        UserDetails userDetails = userDetailsService.loadUserByUsername(username);
-        String authorities = userDetails.getAuthorities().stream()
-                .map(GrantedAuthority::getAuthority)
-                .collect(Collectors.joining(","));
-
-        String accessToken = generateAccessToken(username, authorities, accessTokenExpire);
-
-        //RefreshToken 생성
-        Date refreshTokenExpire = new Date(now + REFRESH_TOKEN_EXPIRE_TIME);
-        String refreshToken = generateRefreshToken(username, refreshTokenExpire);
-
-        // 재 발급된 RefreshToken 을 Redis에 넣기
-        redisDao.setValues(username, refreshToken, Duration.ofMillis(REFRESH_TOKEN_EXPIRE_TIME));
-
-        return JwtToken.builder()
-                .grantType(GRANT_TYPE)
-                .accessToken(accessToken)
-                .refreshToken(refreshToken).build();
-    }
+//    public JwtToken generateTokenWithRefreshToken(String username){
+//        long now = (new Date()).getTime();
+//        // AccessToken 생성
+//        Date accessTokenExpire = new Date(now + ACCESS_TOKEN_EXPIRE_TIME);
+//        // UserDetailService로 유저 정보 가져오기
+////        UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+//        String authorities = userDetails.getAuthorities().stream()
+//                .map(GrantedAuthority::getAuthority)
+//                .collect(Collectors.joining(","));
+//
+//        String accessToken = generateAccessToken(username, authorities, accessTokenExpire);
+//
+//        //RefreshToken 생성
+//        Date refreshTokenExpire = new Date(now + REFRESH_TOKEN_EXPIRE_TIME);
+//        String refreshToken = generateRefreshToken(username, refreshTokenExpire);
+//
+//        // 재 발급된 RefreshToken 을 Redis에 넣기
+//        redisDao.setValues(username, refreshToken, Duration.ofMillis(REFRESH_TOKEN_EXPIRE_TIME));
+//
+//        return JwtToken.builder()
+//                .grantType(GRANT_TYPE)
+//                .accessToken(accessToken)
+//                .refreshToken(refreshToken).build();
+//    }
 
     //JWT토큰 복호화 해서 정보 꺼내기
     public Authentication getAuthentication(String accessToken) {

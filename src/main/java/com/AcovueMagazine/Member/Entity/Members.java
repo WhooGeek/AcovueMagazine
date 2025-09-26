@@ -15,13 +15,16 @@ public class Members {
     private Long member_seq;
 
     @Column(name="oauth_id", nullable = false)
-    private Long oauth_id;
+    private String oauth_id;
 
     @Column(name = "member_name", nullable = false)
     private String memberName;
 
     @Column(name = "member_nickname", nullable = false)
     private String memberNickname;
+
+    @Column(name = "member_password", nullable = false)
+    private String memberPassword;
 
     @Column(name = "member_email", nullable = false)
     private String memberEmail;

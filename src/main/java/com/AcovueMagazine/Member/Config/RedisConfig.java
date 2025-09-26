@@ -15,7 +15,7 @@ import org.springframework.data.redis.serializer.StringRedisSerializer;
 public class RedisConfig {
 
     //application.yml에서 host, port 값을 주입
-    @Value("${spring.data.redis.host")
+    @Value("${spring.data.redis.host}")
     private String host;
 
     @Value("${spring.data.redis.port}")
@@ -46,8 +46,8 @@ public class RedisConfig {
         redisTemplate.setConnectionFactory(redisConnectionFactory());
 
         //Key, value 직렬화 방법 설정
-        redisTemplate.setHashKeySerializer(new StringRedisSerializer());
-        redisTemplate.setHashValueSerializer(new StringRedisSerializer());
+        redisTemplate.setKeySerializer(new StringRedisSerializer());
+        redisTemplate.setValueSerializer(new StringRedisSerializer());
 
         return redisTemplate;
     }

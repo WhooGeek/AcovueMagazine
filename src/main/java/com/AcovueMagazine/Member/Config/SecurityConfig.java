@@ -22,6 +22,8 @@ import org.springframework.web.servlet.handler.HandlerMappingIntrospector;
 public class SecurityConfig {
     private final JwtTokenProvider jwtTokenProvider;
 
+
+
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity httpSecurity, HandlerMappingIntrospector introspector) throws Exception {
         // Spring Security 체크 목록 제외
@@ -46,6 +48,7 @@ public class SecurityConfig {
                 // 사용자 삭제 권한은 관리자만
                         .requestMatchers(HttpMethod.DELETE, "/user").hasRole("ADMIN")
                         .requestMatchers("/members/role").hasRole("USER")
+                        .requestMatchers(HttpMethod.POST, "/api/member/login").permitAll()
                 //이 밖의 모든 요청은 인증 필요
                         .anyRequest().authenticated()
                 );

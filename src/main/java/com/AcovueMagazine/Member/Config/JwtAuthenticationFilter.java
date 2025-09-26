@@ -16,6 +16,8 @@ import java.io.IOException;
 public class JwtAuthenticationFilter extends GenericFilter {
 
     private final JwtTokenProvider jwtTokenProvider;
+    private static final String AUTHORIZATION_HEADER = "Authorization";
+    private static final String BEARER_TYPE = "Bearer";
 
     // 인증 필터 체인에서 UsernamePasswordAuthenticationFilter 이전에 동작하는 커스텀 필터
     // 인증 요청 왔을때 JWT 검증하고 유효한 토큰이면 사용자 인증 정보를 SecurityContext에 저장해서 인증 상태 유지
