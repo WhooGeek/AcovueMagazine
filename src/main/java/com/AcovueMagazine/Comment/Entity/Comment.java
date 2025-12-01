@@ -1,7 +1,7 @@
 package com.AcovueMagazine.Comment.Entity;
 
 import com.AcovueMagazine.Magazine.Entity.Magazine;
-import com.AcovueMagazine.User.Entity.Users;
+import com.AcovueMagazine.Member.Entity.Members;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -22,8 +22,8 @@ public class Comment {
     private Long commentSeq;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_seq", nullable = false)
-    private Users user;
+    @JoinColumn(name = "member_seq", nullable = false)
+    private Members member;
 
     @Column(name="comment_content")
     private String commentContent;
@@ -43,8 +43,8 @@ public class Comment {
     @JoinColumn(name = "magazine_seq", nullable = false)
     private Magazine magazine;
 
-    public Comment(Users user, Magazine magazine, String commentContent, Comment parent) {
-        this.user = user;
+    public Comment(Members member, Magazine magazine, String commentContent, Comment parent) {
+        this.member = member;
         this.magazine = magazine;
         this.commentContent = commentContent;
         this.parent = parent;

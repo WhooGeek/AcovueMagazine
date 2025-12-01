@@ -1,13 +1,13 @@
 package com.AcovueMagazine.Comment.Service;
-import com.AcovueMagazine.Comment.DTO.CommentReqDTO;
-import com.AcovueMagazine.Comment.DTO.CommentResDTO;
+import com.AcovueMagazine.Comment.Dto.CommentReqDTO;
+import com.AcovueMagazine.Comment.Dto.CommentResDTO;
 import com.AcovueMagazine.Comment.Entity.Comment;
 import com.AcovueMagazine.Comment.Respository.CommentRepository;
 import com.AcovueMagazine.Magazine.Entity.Magazine;
 import com.AcovueMagazine.Magazine.Repository.MagazineRepository;
-import com.AcovueMagazine.User.Entity.UserRoll;
-import com.AcovueMagazine.User.Entity.Users;
-import com.AcovueMagazine.User.Repository.UsersRepository;
+import com.AcovueMagazine.Member.Entity.MemberRole;
+import com.AcovueMagazine.Member.Entity.Members;
+import com.AcovueMagazine.Member.Repository.MembersRepository;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -23,7 +23,7 @@ public class CommentService {
 
     private final CommentRepository commentRepository;
     private final MagazineRepository magazineRepository;
-    private final UsersRepository usersRepository;
+    private final MembersRepository membersRepository;
 
     // 댓글 + 대댓글 조회 기능
     @Transactional
@@ -60,7 +60,7 @@ public class CommentService {
     @Transactional
     public CommentResDTO createComment(Long magazineId, CommentReqDTO commentReqDTO) {
 
-        Users users = usersRepository.findById(commentReqDTO.getUserSeq())
+        Members members = membersRepository.findById(commentReqDTO.getUserSeq())
                 .orElseThrow(()-> new EntityNotFoundException("해당 유저를 찾을 수 없습니다."));
 
         // 매거진 유효성 검사
@@ -74,7 +74,7 @@ public class CommentService {
                     .orElseThrow(() -> new EntityNotFoundException("부모 댓글을 찾을 수 없습니다." + commentReqDTO.getParentSeq()));
         }
 
-        Comment comment = new Comment(users, magazine, commentReqDTO.getCommentContent(), parentComment);
+        Comment comment = new Comment(members, magazine, commentReqDTO.getCommentContent(), parentComment);
 
         commentRepository.save(comment);
 
@@ -86,7 +86,7 @@ public class CommentService {
     public CommentResDTO updateComment(Long magazineId, Long commentSeq, CommentReqDTO commentReqDTO) {
 
         // 유저 조회
-        Users users = usersRepository.findById(commentReqDTO.getUserSeq())
+        Members members = membersRepository.findById(commentReqDTO.getUserSeq())
                 .orElseThrow(() -> new EntityNotFoundException("해당 유저를 찾을 수 없습니다. ID = " + commentReqDTO.getUserSeq()) );
 
         // 매거진 조회
@@ -98,8 +98,8 @@ public class CommentService {
                 .orElseThrow(() -> new EntityNotFoundException("해당 댓글을 찾을 수 없습니다." + commentReqDTO.getCommentSeq()));
 
         // 권한 체크
-        if (!magazine.getUser().getUserSeq().equals(users.getUserSeq()) &&
-                users.getUserRoll() != UserRoll.ADMIN) {
+        if (!magazine.getMembers().getMember_seq().equals(members.getMember_seq()) &&
+                members.getMemberRole() != MemberRole.ADMIN) {
             throw new AccessDeniedException("수정 권한이 없습니다.");
         }
 
@@ -116,7 +116,7 @@ public class CommentService {
     public CommentResDTO deleteComment(Long magazineId, Long commentSeq, CommentReqDTO commentReqDTO) {
 
         // 유저 조회
-        Users users = usersRepository.findById(commentReqDTO.getUserSeq())
+        Members members = membersRepository.findById(commentReqDTO.getUserSeq())
                 .orElseThrow(() -> new EntityNotFoundException("해당 유저를 찾을 수 없습니다. ID = " + commentReqDTO.getUserSeq()) );
 
         // 매거진 조회
@@ -127,8 +127,8 @@ public class CommentService {
         Comment comment = commentRepository.findById(commentSeq)
                 .orElseThrow(() -> new EntityNotFoundException("해당 댓글을 찾을 수 없습니다." + commentReqDTO.getCommentSeq()));
 
-        if(comment.getUser().getUserRoll() != UserRoll.ADMIN ||
-            users.getUserSeq() == comment.getUser().getUserSeq()) {
+        if(comment.getMember().getMemberRole() != MemberRole.ADMIN ||
+            members.getMember_seq() == comment.getMember().getMember_seq()) {
             commentRepository.delete(comment);
         } else{
             throw new AccessDeniedException("삭제 권한이 없습니다.");

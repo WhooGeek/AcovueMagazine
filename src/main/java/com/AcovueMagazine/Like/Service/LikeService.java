@@ -1,20 +1,19 @@
 package com.AcovueMagazine.Like.Service;
 
-import com.AcovueMagazine.Comment.DTO.CommentResDTO;
 import com.AcovueMagazine.Comment.Entity.Comment;
 import com.AcovueMagazine.Comment.Respository.CommentRepository;
-import com.AcovueMagazine.Like.DTO.CommentLikeCountResDTO;
-import com.AcovueMagazine.Like.DTO.CommentLikeResDTO;
-import com.AcovueMagazine.Like.DTO.MagazineLikeCountResDTO;
-import com.AcovueMagazine.Like.DTO.MagazineLikeResDTO;
+import com.AcovueMagazine.Like.Dto.CommentLikeCountResDTO;
+import com.AcovueMagazine.Like.Dto.CommentLikeResDTO;
+import com.AcovueMagazine.Like.Dto.MagazineLikeCountResDTO;
+import com.AcovueMagazine.Like.Dto.MagazineLikeResDTO;
 import com.AcovueMagazine.Like.Entity.CommentLike;
 import com.AcovueMagazine.Like.Entity.MagazineLike;
 import com.AcovueMagazine.Like.Respository.CommentLikeRepository;
 import com.AcovueMagazine.Like.Respository.MagazineLikeRepository;
 import com.AcovueMagazine.Magazine.Entity.Magazine;
 import com.AcovueMagazine.Magazine.Repository.MagazineRepository;
-import com.AcovueMagazine.User.Entity.Users;
-import com.AcovueMagazine.User.Repository.UsersRepository;
+import com.AcovueMagazine.Member.Entity.Members;
+import com.AcovueMagazine.Member.Repository.MembersRepository;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -26,23 +25,23 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class LikeService {
 
-    private final UsersRepository usersRepository;
     private final MagazineLikeRepository magazineLikeRepository;
     private final CommentLikeRepository commentLikeRepository;
     private final MagazineRepository magazineRepository;
     private final CommentRepository commentRepository;
+    private final MembersRepository membersRepository;
 
     // 매거진 좋아요 등록
     @Transactional
     public MagazineLikeResDTO toggleMagazineLike(Long magazineSeq, Long userSeq) {
 
-        Users user = usersRepository.findById(userSeq)
+        Members members = membersRepository.findById(userSeq)
                 .orElseThrow(() -> new EntityNotFoundException("해당 유저를 찾을 수 없습니다." + userSeq));
 
         Magazine magazine = magazineRepository.findById(magazineSeq)
                 .orElseThrow(() -> new EntityNotFoundException("해당 매거진을 찾을 수 없습니다." + magazineSeq));
 
-        Optional<MagazineLike> existing = magazineLikeRepository.findByUserAndMagazine(user, magazine);
+        Optional<MagazineLike> existing = magazineLikeRepository.findByMembersAndMagazine(members, magazine);
 
         MagazineLike like;
         if(existing.isPresent()){
@@ -51,7 +50,7 @@ public class LikeService {
             like = null;
         }else{
             // 좋아요 등록
-            like = magazineLikeRepository.save(MagazineLike.create(user, magazine));
+            like = magazineLikeRepository.save(MagazineLike.create(members, magazine));
         }
 
         return MagazineLikeResDTO.fromEntity(like);
@@ -62,13 +61,13 @@ public class LikeService {
     @Transactional
     public CommentLikeResDTO toggleCommentLike(Long commentSeq, Long userSeq) {
 
-        Users user = usersRepository.findById(userSeq)
+        Members members = membersRepository.findById(userSeq)
                 .orElseThrow(() -> new EntityNotFoundException("해당 유저를 찾을 수 없습니다." + userSeq));
 
         Comment comment = commentRepository.findById(commentSeq)
                 .orElseThrow(() -> new EntityNotFoundException("해당 댓글을 찾을 수 없습니다." + commentSeq));
 
-        Optional<CommentLike> existing = commentLikeRepository.findByUserAndComment(user, comment);
+        Optional<CommentLike> existing = commentLikeRepository.findByMembersAndComment(members, comment);
 
         CommentLike like;
         if(existing.isPresent()){
@@ -78,7 +77,7 @@ public class LikeService {
             like = null;
         }else{
             // 좋아요 등록
-            like = commentLikeRepository.save(CommentLike.create(user, comment));
+            like = commentLikeRepository.save(CommentLike.create(members, comment));
         }
 
         return CommentLikeResDTO.fromEntity(like);

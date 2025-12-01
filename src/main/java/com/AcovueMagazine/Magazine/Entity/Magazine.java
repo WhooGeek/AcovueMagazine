@@ -1,6 +1,6 @@
 package com.AcovueMagazine.Magazine.Entity;
 
-import com.AcovueMagazine.User.Entity.Users;
+import com.AcovueMagazine.Member.Entity.Members;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -20,8 +20,8 @@ public class Magazine {
     private Long magazineSeq;
 
     @ManyToOne
-    @JoinColumn(name = "user_seq", nullable = false)
-    private Users user;
+    @JoinColumn(name = "member_seq", nullable = false)
+    private Members members;
 
     @Column(name = "magazine_title", nullable = false)
     private String magazineTitle;
@@ -40,8 +40,8 @@ public class Magazine {
     @Column(name = "mod_date")
     private LocalDateTime modDate;
 
-    public Magazine(Users user, String magazineTitle, String magazineContent) {
-        this.user = user;
+    public Magazine(Members members, String magazineTitle, String magazineContent) {
+        this.members = members;
         this.magazineTitle = magazineTitle;
         this.magazineContent = magazineContent;
     }

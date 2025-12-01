@@ -1,6 +1,5 @@
 package com.AcovueMagazine.Magazine.Repository;
 
-import com.AcovueMagazine.Magazine.DTO.MagazineResDTO;
 import com.AcovueMagazine.Magazine.Entity.Magazine;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;

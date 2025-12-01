@@ -6,25 +6,31 @@ plugins {
 
 group = 'com.whoo'
 version = '1.0-SNAPSHOT'
-sourceCompatibility = '22'
+sourceCompatibility = '21'
 
 repositories {
     mavenCentral()
 }
 
 dependencies {
-    // Spring Web
+
+
+
+    // Spring Boot
     implementation 'org.springframework.boot:spring-boot-starter-web'
-
-    // Spring Data JPA
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
-//    implementation 'org.springframework.boot:spring-boot-starter-security'
-
-    //Spring Security
-//    testImplementation 'org.springframework.security:spring-security-test'
+    implementation 'org.springframework.boot:spring-boot-starter-security'
+    implementation 'org.springframework.boot:spring-boot-starter-validation'
+    implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'
+    implementation 'org.springframework.boot:spring-boot-starter-data-redis'
 
     // MySQL Connector
-    runtimeOnly 'com.mysql:mysql-connector-j'
+    implementation 'com.mysql:mysql-connector-j:8.0.33'
+
+    // JWT
+    implementation 'io.jsonwebtoken:jjwt-api:0.12.5'
+    runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.12.5'
+    runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.12.5'
 
     // Lombok
     compileOnly 'org.projectlombok:lombok'
@@ -33,35 +39,29 @@ dependencies {
     // DevTools
     developmentOnly 'org.springframework.boot:spring-boot-devtools'
 
+    // Model Mapper
+    implementation 'org.modelmapper:modelmapper:3.2.0'
+
     // Test
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation 'org.springframework.security:spring-security-test'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+
+    implementation 'org.glassfish.jaxb:jaxb-runtime:4.0.2'
+    implementation 'jakarta.xml.bind:jakarta.xml.bind-api:4.0.0'
 
     // env
     implementation 'me.paulschwarz:spring-dotenv:3.0.0'
 
-    // Model Mapper
-    implementation 'org.modelmapper:modelmapper:3.2.0'
+    // Hibernate가 사용하는 ByteBuddy
+    implementation 'net.bytebuddy:byte-buddy:1.14.9'
+    implementation 'net.bytebuddy:byte-buddy-agent:1.14.9'
 
-    // OAuth
-    implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'
-
-    //JSON Web Token
-//    implementation 'io.jsonwebtoken:jjwt-api:0.11.5'
-//    implementation 'io.jsonwebtoken:jjwt-impl:0.11.5'
-//    runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.11.5'
-
-    //redis
-//    implementation 'org.springframework.boot:spring-boot-starter-security'
-//    implementation 'org.springframework.boot:spring-boot-starter-data-redis'
-//    implementation 'org.springframework.session:spring-session-data-redis'
-
-    //Spring Validation
-    implementation 'org.springframework.boot:spring-boot-starter-validation'
+    implementation 'com.fasterxml.jackson.core:jackson-databind:2.17.1'
+    implementation 'com.fasterxml.jackson.core:jackson-core:2.17.1'
+    implementation 'com.fasterxml.jackson.core:jackson-annotations:2.17.1'
 
 
-    implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
-    runtimeOnly "com.mysql:mysql-connector-j"
-    annotationProcessor 'org.projectlombok:lombok'
 }
 
 test {
