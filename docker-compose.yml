@@ -1,0 +1,13 @@
+version: '3'
+services:
+  redis:
+    image: redis:7.2              # Redis 최신 안정버전
+    container_name: redis-dev
+    ports:
+      - "6379:6379"               # 로컬과 컨테이너 포트 매핑
+    command: ["redis-server", "--appendonly", "yes"] # 데이터 지속화 옵션
+    volumes:
+      - redis-data:/data           # 데이터 저장용 볼륨
+
+volumes:
+  redis-data:

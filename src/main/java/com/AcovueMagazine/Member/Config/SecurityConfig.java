@@ -1,5 +1,6 @@
 package com.AcovueMagazine.Member.Config;
 
+import com.AcovueMagazine.Member.Dao.RedisDao;
 import com.AcovueMagazine.Member.Util.JwtTokenProvider;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -22,14 +23,12 @@ import org.springframework.web.servlet.handler.HandlerMappingIntrospector;
 public class SecurityConfig {
     private final JwtTokenProvider jwtTokenProvider;
 
-
-
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity httpSecurity, HandlerMappingIntrospector introspector) throws Exception {
+    public SecurityFilterChain filterChain(HttpSecurity httpSecurity, HandlerMappingIntrospector introspector, RedisDao redisDao) throws Exception {
         // Spring Security 체크 목록 제외
         MvcRequestMatcher.Builder mvc = new MvcRequestMatcher.Builder(introspector);
         MvcRequestMatcher[] permitAllList = {
-                mvc.pattern("/members/sign-in")
+                mvc.pattern("/api/members/login")
         };
 
         // REST API -> basic auth 및 csrf 보안 사용 X
@@ -49,12 +48,15 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.DELETE, "/user").hasRole("ADMIN")
                         .requestMatchers("/members/role").hasRole("USER")
                         .requestMatchers(HttpMethod.POST, "/api/member/login").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/member/sing-up").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/member/logout").hasRole("USER")
+                        .requestMatchers(HttpMethod.POST, "/api/member/me/update").hasRole("USER")
                 //이 밖의 모든 요청은 인증 필요
                         .anyRequest().authenticated()
                 );
 
         // jwt 인증을 위해 구현한 커스텀 필터를 UsernamePasswordAuthnticationFilter 전에 실행
-        httpSecurity.addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider),
+        httpSecurity.addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider, redisDao),
                 UsernamePasswordAuthenticationFilter.class);
 
         return httpSecurity.build();

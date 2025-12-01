@@ -18,6 +18,12 @@ spring:
     redis:
       host: localhost
       port: 6379
+      password: "" # 필요 없으면 공백
+      jedis:
+        pool:
+          max-active: 10
+          max-idle: 5
+          min-idle: 1
 
   security:
     oauth2:

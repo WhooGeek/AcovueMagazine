@@ -1,14 +1,10 @@
 package com.AcovueMagazine.Member.Service;
 
-import com.AcovueMagazine.Common.Response.ErrorCode;
-import com.AcovueMagazine.Common.Response.ResponseUtil;
 import com.AcovueMagazine.Member.Entity.Members;
 import com.AcovueMagazine.Member.Repository.MembersRepository;
 import com.AcovueMagazine.Member.Util.MemberDetail;
-import jakarta.transaction.SystemException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;

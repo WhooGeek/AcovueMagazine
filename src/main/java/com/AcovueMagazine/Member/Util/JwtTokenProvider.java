@@ -1,10 +1,10 @@
 package com.AcovueMagazine.Member.Util;
 
-import com.AcovueMagazine.Member.Config.JwtToken;
 import com.AcovueMagazine.Member.Dao.RedisDao;
 import com.AcovueMagazine.Member.Dto.MemberLoginDto;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -13,9 +13,11 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.stereotype.Component;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 
+import javax.crypto.SecretKey;
 import java.security.Key;
 import java.util.Arrays;
 import java.util.Collection;
@@ -28,8 +30,8 @@ import java.util.stream.Collectors;
 @Component
 public class JwtTokenProvider {
 
-    private final Key key;
-
+//    private final Key key;
+    private final SecretKey key;
 //    private final UserDetailsService userDetailsService;
     private final RedisDao redisDao; // RefreshToken 저장을 위해 Redis 사용
 
@@ -61,9 +63,20 @@ public class JwtTokenProvider {
         long now = (new Date()).getTime();
         String username = authentication.getName();
 
+        Long memberSeq = null;
+
+        Object principal = authentication.getPrincipal();
+        if (principal instanceof MemberDetail memberDetail) {
+            memberSeq = memberDetail.getMember().getMember_seq();
+        } else if(principal instanceof User user){
+            throw new IllegalArgumentException("MemberSeq를 가져올 수 없습니다.");
+        } else{
+            throw new IllegalArgumentException("알 수 없는 principal 타입");
+        }
+
         //AccessToken생성
         Date accessTokenExpire = new Date(now + ACCESS_TOKEN_EXPIRE_TIME);
-        String accessToken = generateAccessToken(username, authorities, accessTokenExpire);
+        String accessToken = generateAccessToken(username, authorities, memberSeq, accessTokenExpire);
 
         //RefreshToken 생성
         Date refreshTokenExpire = new Date(now + REFRESH_TOKEN_EXPIRE_TIME);
@@ -89,40 +102,15 @@ public class JwtTokenProvider {
                 .compact();
     }
 
-    private String generateAccessToken(String username, String authorities, Date expireDate) {
+    private String generateAccessToken(String username, String authorities, Long memberSeq, Date expireDate) {
         return Jwts.builder()
                 .setSubject(username) // 토큰 제목(사용자이름)
                 .claim("auth", authorities) // 권한 정보 (커스텀 클레임)
+                .claim("memberSeq", memberSeq)
                 .setExpiration(expireDate) // 만료시간 설정
                 .signWith(key, SignatureAlgorithm.HS256)
                 .compact(); // JWT 문자열 생성
     }
-
-    // 이건 리프래쉬 토큰 재발급, 재발급 된 리프래쉬 토큰 다시 레디스에 저장하는 로직
-//    public JwtToken generateTokenWithRefreshToken(String username){
-//        long now = (new Date()).getTime();
-//        // AccessToken 생성
-//        Date accessTokenExpire = new Date(now + ACCESS_TOKEN_EXPIRE_TIME);
-//        // UserDetailService로 유저 정보 가져오기
-////        UserDetails userDetails = userDetailsService.loadUserByUsername(username);
-//        String authorities = userDetails.getAuthorities().stream()
-//                .map(GrantedAuthority::getAuthority)
-//                .collect(Collectors.joining(","));
-//
-//        String accessToken = generateAccessToken(username, authorities, accessTokenExpire);
-//
-//        //RefreshToken 생성
-//        Date refreshTokenExpire = new Date(now + REFRESH_TOKEN_EXPIRE_TIME);
-//        String refreshToken = generateRefreshToken(username, refreshTokenExpire);
-//
-//        // 재 발급된 RefreshToken 을 Redis에 넣기
-//        redisDao.setValues(username, refreshToken, Duration.ofMillis(REFRESH_TOKEN_EXPIRE_TIME));
-//
-//        return JwtToken.builder()
-//                .grantType(GRANT_TYPE)
-//                .accessToken(accessToken)
-//                .refreshToken(refreshToken).build();
-//    }
 
     //JWT토큰 복호화 해서 정보 꺼내기
     public Authentication getAuthentication(String accessToken) {
@@ -147,11 +135,11 @@ public class JwtTokenProvider {
     // JWT 복호화
     private Claims parseClaims(String accessToken) {
         try{
-            return Jwts.parserBuilder()
-                    .setSigningKey(key)
+            return Jwts.parser()
+                    .verifyWith(key)
                     .build()
-                    .parseClaimsJws(accessToken)
-                    .getBody();
+                    .parseSignedClaims(accessToken)
+                    .getPayload();
         } catch (ExpiredJwtException e){
             return e.getClaims();
         }
@@ -160,10 +148,10 @@ public class JwtTokenProvider {
     // TOken 검증
     public boolean validateToken(String token) {
         try{
-            Jwts.parserBuilder()
-                    .setSigningKey(key)
+            Jwts.parser()
+                    .verifyWith(key)
                     .build()
-                    .parseClaimsJws(token);
+                    .parseSignedClaims(token);
 
             return true;
         } catch(SecurityException | MalformedJwtException e){
@@ -198,11 +186,11 @@ public class JwtTokenProvider {
     private String getUserNameFromToken(String token) {
         try{
             // 토큰 파싱해서 클레임 얻기
-            Claims claims = Jwts.parserBuilder()
-                    .setSigningKey(key)
+            Claims claims = Jwts.parser()
+                    .verifyWith(key)
                     .build()
-                    .parseClaimsJws(token)
-                    .getBody();
+                    .parseSignedClaims(token)
+                    .getPayload();
 
             // 사용자 이름 Subject 변환
             return claims.getSubject();
@@ -221,5 +209,42 @@ public class JwtTokenProvider {
         // 로그아웃 시 redis.dao에서 refreshTOken 삭제
         redisDao.deleteValues(username);
     }
+
+    // request에서 토큰 추출
+    public String resolveToken() {
+        HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes()).getRequest();
+
+        String bearerToken = request.getHeader("Authorization");
+
+        if(bearerToken != null && bearerToken.startsWith("Bearer ")){
+            return bearerToken.substring(7);
+        }
+
+        return null;
+    }
+
+    public long getExpiration(String accessToken) {
+        // JWT 파싱해서 claims 가져오기
+        JwtParser parser = Jwts.parser()
+                .verifyWith(key)  // 키 설정
+                .build();
+
+        Claims claims = parser.parseSignedClaims(accessToken).getPayload();
+
+        return claims.getExpiration().getTime();
+    }
+
+    public Long getMemberSeqFromToken(String token) {
+        Claims claims = parseClaims(token);
+        Object memberSeq = claims.get("memberSeq");
+        if (memberSeq instanceof Integer) { // JSON 숫자는 Integer로 올 수 있음
+            return ((Integer) memberSeq).longValue();
+        } else if (memberSeq instanceof Long) {
+            return (Long) memberSeq;
+        }
+        return null;
+    }
+
+
 
 }

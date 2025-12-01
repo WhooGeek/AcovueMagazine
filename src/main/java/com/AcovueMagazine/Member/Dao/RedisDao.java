@@ -2,6 +2,7 @@ package com.AcovueMagazine.Member.Dao;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Repository;
@@ -13,6 +14,7 @@ import java.time.Duration;
 @RequiredArgsConstructor
 public class RedisDao {
     private final RedisTemplate<String, Object> redisTemplate;
+    private final StringRedisTemplate stringRedisTemplate;
 
     // 저장
     public void setValues(String key, String data){
@@ -40,4 +42,13 @@ public class RedisDao {
         redisTemplate.delete(key);
     }
 
+    public void setBlackList(String accessToken, String logout, Duration duration) {
+        stringRedisTemplate.opsForValue().set("BlackList:" + accessToken, logout, duration);
+    }
+
+    public boolean isBlackList(String accessToken) {
+        return Boolean.TRUE.equals(
+                stringRedisTemplate.hasKey("BLACKLIST:" + accessToken)
+        );
+    }
 }

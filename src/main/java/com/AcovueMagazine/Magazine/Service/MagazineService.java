@@ -101,7 +101,6 @@ public class MagazineService {
             magazine.updateTitle(magazineReqDTO.getMagazine_title());
         }
 
-
         // 내용 수정이 있으면 저장
         if (magazineReqDTO.getMagazine_content() != null && !magazineReqDTO.getMagazine_content().isBlank()) {
             magazine.updateContent(magazineReqDTO.getMagazine_content());
