@@ -27,14 +27,14 @@ public class CommentService {
 
     // 댓글 + 대댓글 조회 기능
     @Transactional
-    public List<CommentResDTO> getComment(Long magazineId) {
+    public List<CommentResDTO> getComment(Long postId) {
 
         // 매거진 유효성 검사
-        Post magazine = magazineRepository.findById(magazineId)
-                .orElseThrow(() -> new EntityNotFoundException("해당 매거진을 찾을 수 없습니다. ID = " + magazineId));
+        Post magazine = magazineRepository.findById(postId)
+                .orElseThrow(() -> new EntityNotFoundException("해당 매거진을 찾을 수 없습니다. ID = " + postId));
 
         // 최초 댓글 조회
-        List<Comment> topComments = commentRepository.findTopCommentsByMagazine(magazineId);
+        List<Comment> topComments = commentRepository.findTopCommentsByPost(postId);
 
         List<CommentResDTO> result = new ArrayList<>();
 
@@ -58,14 +58,14 @@ public class CommentService {
 
     // 댓글 + 대댓글 등록
     @Transactional
-    public CommentResDTO createComment(Long magazineId, CommentReqDTO commentReqDTO) {
+    public CommentResDTO createComment(Long postId, CommentReqDTO commentReqDTO) {
 
         Members members = membersRepository.findById(commentReqDTO.getUserSeq())
                 .orElseThrow(()-> new EntityNotFoundException("해당 유저를 찾을 수 없습니다."));
 
         // 매거진 유효성 검사
-        Post magazine = magazineRepository.findById(magazineId)
-                .orElseThrow(() -> new EntityNotFoundException("해당 매거진을 찾을 수 없습니다. ID = " + magazineId));
+        Post magazine = magazineRepository.findById(postId)
+                .orElseThrow(() -> new EntityNotFoundException("해당 매거진을 찾을 수 없습니다. ID = " + postId));
 
         Comment parentComment = null;
 
@@ -83,15 +83,15 @@ public class CommentService {
 
     // 댓글 + 대댓글 수정
     @Transactional
-    public CommentResDTO updateComment(Long magazineId, Long commentSeq, CommentReqDTO commentReqDTO) {
+    public CommentResDTO updateComment(Long postId, Long commentSeq, CommentReqDTO commentReqDTO) {
 
         // 유저 조회
         Members members = membersRepository.findById(commentReqDTO.getUserSeq())
                 .orElseThrow(() -> new EntityNotFoundException("해당 유저를 찾을 수 없습니다. ID = " + commentReqDTO.getUserSeq()) );
 
         // 매거진 조회
-        Post magazine = magazineRepository.findById(magazineId)
-                .orElseThrow(() -> new EntityNotFoundException("해당 매거진을 찾을 수 없습니다. ID = " + magazineId));
+        Post magazine = magazineRepository.findById(postId)
+                .orElseThrow(() -> new EntityNotFoundException("해당 매거진을 찾을 수 없습니다. ID = " + postId));
 
         // 댓글 조회
         Comment comment = commentRepository.findById(commentSeq)
@@ -113,15 +113,15 @@ public class CommentService {
 
     // 댓글 + 대댓글 삭제
     @Transactional
-    public CommentResDTO deleteComment(Long magazineId, Long commentSeq, CommentReqDTO commentReqDTO) {
+    public CommentResDTO deleteComment(Long postId, Long commentSeq, CommentReqDTO commentReqDTO) {
 
         // 유저 조회
         Members members = membersRepository.findById(commentReqDTO.getUserSeq())
                 .orElseThrow(() -> new EntityNotFoundException("해당 유저를 찾을 수 없습니다. ID = " + commentReqDTO.getUserSeq()) );
 
         // 매거진 조회
-        Post magazine = magazineRepository.findById(magazineId)
-                .orElseThrow(() -> new EntityNotFoundException("해당 매거진을 찾을 수 없습니다. ID = " + magazineId));
+        Post magazine = magazineRepository.findById(postId)
+                .orElseThrow(() -> new EntityNotFoundException("해당 매거진을 찾을 수 없습니다. ID = " + postId));
 
         // 댓글 조회
         Comment comment = commentRepository.findById(commentSeq)

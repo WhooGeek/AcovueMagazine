@@ -4,12 +4,12 @@ import com.AcovueMagazine.Comment.Entity.Comment;
 import com.AcovueMagazine.Comment.Respository.CommentRepository;
 import com.AcovueMagazine.Like.Dto.CommentLikeCountResDTO;
 import com.AcovueMagazine.Like.Dto.CommentLikeResDTO;
-import com.AcovueMagazine.Like.Dto.MagazineLikeCountResDTO;
-import com.AcovueMagazine.Like.Dto.MagazineLikeResDTO;
+import com.AcovueMagazine.Like.Dto.PostLikeCountResDTO;
+import com.AcovueMagazine.Like.Dto.PostLikeResDTO;
 import com.AcovueMagazine.Like.Entity.CommentLike;
-import com.AcovueMagazine.Like.Entity.MagazineLike;
+import com.AcovueMagazine.Like.Entity.PostLike;
 import com.AcovueMagazine.Like.Respository.CommentLikeRepository;
-import com.AcovueMagazine.Like.Respository.MagazineLikeRepository;
+import com.AcovueMagazine.Like.Respository.PostLikeRepository;
 import com.AcovueMagazine.Post.Entity.Post;
 import com.AcovueMagazine.Post.Repository.PostRepository;
 import com.AcovueMagazine.Member.Entity.Members;
@@ -25,7 +25,7 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class LikeService {
 
-    private final MagazineLikeRepository magazineLikeRepository;
+    private final PostLikeRepository magazineLikeRepository;
     private final CommentLikeRepository commentLikeRepository;
     private final PostRepository magazineRepository;
     private final CommentRepository commentRepository;
@@ -33,27 +33,27 @@ public class LikeService {
 
     // 매거진 좋아요 등록
     @Transactional
-    public MagazineLikeResDTO toggleMagazineLike(Long magazineSeq, Long userSeq) {
+    public PostLikeResDTO togglePostLike(Long postSeq, Long userSeq) {
 
         Members members = membersRepository.findById(userSeq)
                 .orElseThrow(() -> new EntityNotFoundException("해당 유저를 찾을 수 없습니다." + userSeq));
 
-        Post magazine = magazineRepository.findById(magazineSeq)
-                .orElseThrow(() -> new EntityNotFoundException("해당 매거진을 찾을 수 없습니다." + magazineSeq));
+        Post post = magazineRepository.findById(postSeq)
+                .orElseThrow(() -> new EntityNotFoundException("해당 매거진을 찾을 수 없습니다." + postSeq));
 
-        Optional<MagazineLike> existing = magazineLikeRepository.findByMembersAndMagazine(members, magazine);
+        Optional<PostLike> existing = magazineLikeRepository.findByMembersAndPost(members, post);
 
-        MagazineLike like;
+        PostLike like;
         if(existing.isPresent()){
             // 좋아요 취소
             magazineLikeRepository.delete(existing.get());
             like = null;
         }else{
             // 좋아요 등록
-            like = magazineLikeRepository.save(MagazineLike.create(members, magazine));
+            like = magazineLikeRepository.save(PostLike.create(members, post));
         }
 
-        return MagazineLikeResDTO.fromEntity(like);
+        return PostLikeResDTO.fromEntity(like);
     }
 
 
@@ -97,14 +97,14 @@ public class LikeService {
 
     // 매거진 좋아요 조회 기능
     @Transactional
-    public MagazineLikeCountResDTO magazineLikeCount(Long magazineSeq) {
+    public PostLikeCountResDTO postLikeCount(Long postSeq) {
 
-        Post magazine = magazineRepository.findById(magazineSeq)
-                .orElseThrow(() -> new EntityNotFoundException("해당 매거진을 찾을 수 없습니다." + magazineSeq));
+        Post magazine = magazineRepository.findById(postSeq)
+                .orElseThrow(() -> new EntityNotFoundException("해당 매거진을 찾을 수 없습니다." + postSeq));
 
-        Long magazineLikeCount = magazineLikeRepository.countByMagazine_MagazineSeq(magazineSeq);
+        Long magazineLikeCount = magazineLikeRepository.countByPost_PostSeq(postSeq);
 
-        return MagazineLikeCountResDTO.from(magazineSeq, magazineLikeCount);
+        return PostLikeCountResDTO.from(postSeq, magazineLikeCount);
 
     }
 }

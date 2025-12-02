@@ -5,7 +5,7 @@ import org.springframework.data.jpa.domain.Specification;
 
 import java.time.LocalDateTime;
 
-public class MagazineSpecification {
+public class PostSpecification {
 
     /**
      * Creates a Specification that matches magazines whose title or content contains the given keyword (case-insensitive).
@@ -19,8 +19,8 @@ public class MagazineSpecification {
         return (root, query, builder) -> {
             if (keyword == null || keyword.isEmpty()) return null;
             return builder.or(
-                    builder.like(builder.lower(root.get("magazineTitle")), "%" + keyword.toLowerCase() + "%"),
-                    builder.like(builder.lower(root.get("magazineContent")), "%" + keyword.toLowerCase() + "%")
+                    builder.like(builder.lower(root.get("postTitle")), "%" + keyword.toLowerCase() + "%"),
+                    builder.like(builder.lower(root.get("postContent")), "%" + keyword.toLowerCase() + "%")
             );
         };
     }

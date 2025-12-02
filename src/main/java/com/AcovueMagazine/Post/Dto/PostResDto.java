@@ -21,10 +21,10 @@ public class PostResDto {
     private String memberNickname;
     private String memberEmail;
     private MemberStatus memberStatus;
-    private Long magazineSeq;
-    private String magazineTitle;
-    private String magazineContent;
-    private PostType magazine_category;
+    private Long postSeq;
+    private String postTitle;
+    private String postContent;
+    private PostType post_category;
     private LocalDateTime regDate;
     private LocalDateTime modDate;
 
@@ -37,10 +37,10 @@ public class PostResDto {
                 magazine.getMembers().getMemberNickname(),
                 magazine.getMembers().getMemberEmail(),
                 magazine.getMembers().getMemberStatus(),
-                magazine.getMagazineSeq(),
-                magazine.getMagazineTitle(),
-                magazine.getMagazineContent(),
-                magazine.getMagazineCategory(),
+                magazine.getPostSeq(),
+                magazine.getPostTitle(),
+                magazine.getPostContent(),
+                magazine.getPostCategory(),
                 magazine.getRegDate(),
                 magazine.getModDate()
         );

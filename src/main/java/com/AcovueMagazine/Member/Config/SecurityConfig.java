@@ -51,6 +51,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/api/member/sing-up").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/member/logout").hasRole("USER")
                         .requestMatchers(HttpMethod.POST, "/api/member/me/update").hasRole("USER")
+                        .requestMatchers(HttpMethod.GET, "/api/post/find/all").permitAll()
                 //이 밖의 모든 요청은 인증 필요
                         .anyRequest().authenticated()
                 );

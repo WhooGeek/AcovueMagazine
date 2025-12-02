@@ -10,12 +10,12 @@ import lombok.AccessLevel;
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@Table(name = "magazine_like")
-public class MagazineLike {
+@Table(name = "post_like")
+public class PostLike {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "magazine_like_seq", nullable = false)
+    @Column(name = "post_like_seq", nullable = false)
     private Long likeSeq;
 
     @ManyToOne
@@ -23,15 +23,15 @@ public class MagazineLike {
     private Members members;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "magazine_seq", nullable = false)
-    private Post magazine;
+    @JoinColumn(name = "post_seq", nullable = false)
+    private Post post;
 
-    public MagazineLike(Members members, Post magazine) {
+    public PostLike(Members members, Post post) {
         this.members = members;
-        this.magazine = magazine;
+        this.post = post;
     }
 
-    public static MagazineLike create(Members members, Post magazine) {
-        return new MagazineLike(members, magazine);
+    public static PostLike create(Members members, Post post) {
+        return new PostLike(members, post);
     }
 }
