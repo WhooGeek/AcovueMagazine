@@ -1,7 +1,7 @@
 package com.AcovueMagazine.Like.Respository;
 
 import com.AcovueMagazine.Like.Entity.MagazineLike;
-import com.AcovueMagazine.Magazine.Entity.Magazine;
+import com.AcovueMagazine.Post.Entity.Post;
 import com.AcovueMagazine.Member.Entity.Members;
 import org.springframework.data.jpa.repository.JpaRepository;
 
@@ -11,7 +11,7 @@ import java.util.Optional;
 public interface MagazineLikeRepository extends JpaRepository<MagazineLike, Long> {
 
     // 유저 + 매거진으로 좋아요 있는지 검증
-    Optional<MagazineLike> findByMembersAndMagazine(Members members, Magazine magazine);
+    Optional<MagazineLike> findByMembersAndMagazine(Members members, Post magazine);
 
     // 매거진seq로 매거진 좋아요 개수 조회
     Long countByMagazine_MagazineSeq(Long magazineSeq);

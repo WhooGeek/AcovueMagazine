@@ -1,6 +1,6 @@
 package com.AcovueMagazine.Comment.Entity;
 
-import com.AcovueMagazine.Magazine.Entity.Magazine;
+import com.AcovueMagazine.Post.Entity.Post;
 import com.AcovueMagazine.Member.Entity.Members;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
@@ -41,9 +41,9 @@ public class Comment {
 
     @ManyToOne
     @JoinColumn(name = "magazine_seq", nullable = false)
-    private Magazine magazine;
+    private Post magazine;
 
-    public Comment(Members member, Magazine magazine, String commentContent, Comment parent) {
+    public Comment(Members member, Post magazine, String commentContent, Comment parent) {
         this.member = member;
         this.magazine = magazine;
         this.commentContent = commentContent;

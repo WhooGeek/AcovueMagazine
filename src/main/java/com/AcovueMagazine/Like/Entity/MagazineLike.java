@@ -1,6 +1,6 @@
 package com.AcovueMagazine.Like.Entity;
 
-import com.AcovueMagazine.Magazine.Entity.Magazine;
+import com.AcovueMagazine.Post.Entity.Post;
 import com.AcovueMagazine.Member.Entity.Members;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -24,14 +24,14 @@ public class MagazineLike {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "magazine_seq", nullable = false)
-    private Magazine magazine;
+    private Post magazine;
 
-    public MagazineLike(Members members, Magazine magazine) {
+    public MagazineLike(Members members, Post magazine) {
         this.members = members;
         this.magazine = magazine;
     }
 
-    public static MagazineLike create(Members members, Magazine magazine) {
+    public static MagazineLike create(Members members, Post magazine) {
         return new MagazineLike(members, magazine);
     }
 }
