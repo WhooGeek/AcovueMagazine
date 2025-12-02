@@ -5,6 +5,7 @@ import com.AcovueMagazine.Common.Response.ApiResponse;
 import com.AcovueMagazine.Common.Response.ResponseUtil;
 import com.AcovueMagazine.Post.Dto.PostReqDto;
 import com.AcovueMagazine.Post.Dto.PostResDto;
+import com.AcovueMagazine.Post.Entity.PostType;
 import com.AcovueMagazine.Post.Service.PostService;
 import com.AcovueMagazine.Member.Entity.Members;
 import lombok.RequiredArgsConstructor;
@@ -15,7 +16,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/magazine")
+@RequestMapping("/api/post")
 @RequiredArgsConstructor
 public class PostController {
 
@@ -35,15 +36,16 @@ public class PostController {
      * @return an ApiResponse whose data is a List of MagazineResDTO matching the search criteria
      */
     @GetMapping("/search")
-    public ApiResponse<?> searchMagazine(
+    public ApiResponse<?> searchPost(
             @RequestParam(required = false) String keyword,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime start,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime end,
             @RequestParam(defaultValue = "true") boolean newestFirst
     ){
-        List<PostResDto> searchResults = postService.searchMagzine(keyword, start, end, newestFirst);
+        List<PostResDto> searchResults = postService.searchPost(keyword, start, end, newestFirst);
         return ResponseUtil.successResponse("매거진 검색을 성공적으로 수행하였습니다.", searchResults).getBody();
     }
+
 
     /**
      * Retrieves all magazines and wraps them in a success ApiResponse.
@@ -51,9 +53,17 @@ public class PostController {
      * @return an ApiResponse containing a List of MagazineResDTO on success
      */
     @GetMapping("/find/all")
-    public ApiResponse<?> getMagazineList() {
-        List<PostResDto> magazines = postService.getAllMagazines();
-        return ResponseUtil.successResponse("매거진 전체 조회를 성공적으로 수행하였습니다.", magazines).getBody();
+    public ApiResponse<?> getPostList(
+            @RequestParam(required = false, defaultValue = "10") Integer limit, // 페이지당 개수 (기본값은 10)
+            @RequestParam(required = false, defaultValue = "1") Integer page, // 페이지 번호 (기본값은 1)
+            @RequestParam(required = false) String type // 게시물 타입
+    ) {
+        // Category -> Enum
+        PostType postType = (type != null) ? PostType.valueOf(type.toUpperCase()) : null;
+
+        List<PostResDto> posts = postService.getAllPosts(limit, page, postType);
+
+        return ResponseUtil.successResponse("매거진 전체 조회를 성공적으로 수행하였습니다.", posts).getBody();
     }
 
     // 매거진 상세조회

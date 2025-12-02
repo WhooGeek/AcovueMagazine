@@ -4,8 +4,8 @@ import com.AcovueMagazine.Common.Response.ApiResponse;
 import com.AcovueMagazine.Common.Response.ResponseUtil;
 import com.AcovueMagazine.Like.Dto.CommentLikeCountResDTO;
 import com.AcovueMagazine.Like.Dto.CommentLikeResDTO;
-import com.AcovueMagazine.Like.Dto.MagazineLikeCountResDTO;
-import com.AcovueMagazine.Like.Dto.MagazineLikeResDTO;
+import com.AcovueMagazine.Like.Dto.PostLikeCountResDTO;
+import com.AcovueMagazine.Like.Dto.PostLikeResDTO;
 import com.AcovueMagazine.Like.Service.LikeService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
@@ -18,10 +18,10 @@ public class LikeController {
     private final LikeService likeService;
 
     //매거진 좋아요 토글 기능
-    @PostMapping("magazine/{magazineSeq}/{userSeq}")
-    public ApiResponse<?> toggleMagazineLike(@PathVariable Long magazineSeq, @PathVariable Long userSeq){
+    @PostMapping("post/{postSeq}/{userSeq}")
+    public ApiResponse<?> togglePostLike(@PathVariable Long postSeq, @PathVariable Long userSeq){
 
-        MagazineLikeResDTO like = likeService.toggleMagazineLike(magazineSeq, userSeq);
+        PostLikeResDTO like = likeService.togglePostLike(postSeq, userSeq);
 
         return ResponseUtil.successResponse("매거진 좋아요를 성공적으로 등록/삭제하였습니다.", like).getBody();
     }
@@ -45,11 +45,11 @@ public class LikeController {
     }
 
     // 매거진 좋아요 조회 기능
-    @GetMapping("magazine/{magazineSeq}")
-    public ApiResponse<?> getMagazineLike(@PathVariable Long magazineSeq){
-        MagazineLikeCountResDTO magazineLikeCount = likeService.magazineLikeCount(magazineSeq);
+    @GetMapping("magazine/{postSeq}")
+    public ApiResponse<?> getPostLike(@PathVariable Long postSeq){
+        PostLikeCountResDTO postLikeCount = likeService.postLikeCount(postSeq);
 
-        return ResponseUtil.successResponse("매거진 좋아요를 성공적으로 조회하였습니다.", magazineLikeCount).getBody();
+        return ResponseUtil.successResponse("매거진 좋아요를 성공적으로 조회하였습니다.", postLikeCount).getBody();
     }
 
 

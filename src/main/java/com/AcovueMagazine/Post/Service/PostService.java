@@ -4,16 +4,20 @@ package com.AcovueMagazine.Post.Service;
 import com.AcovueMagazine.Post.Dto.PostReqDto;
 import com.AcovueMagazine.Post.Entity.Post;
 import com.AcovueMagazine.Post.Dto.PostResDto;
+import com.AcovueMagazine.Post.Entity.PostType;
 import com.AcovueMagazine.Post.Repository.PostRepository;
-import com.AcovueMagazine.Post.Specification.MagazineSpecification;
 import com.AcovueMagazine.Member.Entity.MemberRole;
 import com.AcovueMagazine.Member.Entity.Members;
 import com.AcovueMagazine.Member.Entity.MemberStatus;
 import com.AcovueMagazine.Member.Repository.MembersRepository;
+import com.AcovueMagazine.Post.Specification.PostSpecification;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.access.AccessDeniedException;
@@ -31,54 +35,64 @@ public class PostService {
     private final PostRepository postRepository;
     private final MembersRepository membersRepository;
 
-    // 매거진 전체 조회
+    // Post 조회 ( Limit, page, PostType )
     @Transactional
-    public List<PostResDto> getAllMagazines() {
-        List<Post> magazines = postRepository.findAll();
+    public List<PostResDto> getAllPosts(Integer limit, Integer page, PostType postType) {
 
+        Sort sort = Sort.by(Sort.Direction.DESC, "regDate");
+        Pageable pageable = PageRequest.of(page - 1, limit, sort);
 
-        return magazines.stream()
-                .map(magazine -> new PostResDto(
-                        magazine.getMembers().getMember_seq(),
-                        magazine.getMembers().getMemberName(),// 엔티티 필드에 맞춰서
-                        magazine.getMembers().getMemberNickname(),
-                        magazine.getMembers().getMemberEmail(),
-                        magazine.getMembers().getMemberStatus(),
-                        magazine.getMagazineSeq(),
-                        magazine.getMagazineTitle(),
-                        magazine.getMagazineContent(),
-                        magazine.getMagazineCategory(),
-                        magazine.getRegDate(),
-                        magazine.getModDate()
-                ))
-                .collect(Collectors.toList());
+        Page<Post> postPage;
+
+        if(postType != null){
+            // 특정 카테고리 지정 된 케이스
+            postPage = postRepository.findByPostCategory(postType, pageable);
+        } else {
+            // 카테고리 지정 안된 케이스
+            postPage = postRepository.findAll(pageable);
+        }
+
+        return postPage.getContent().stream()
+                .map(post -> new PostResDto(
+                        post.getMembers().getMember_seq(),
+                        post.getMembers().getMemberName(),
+                        post.getMembers().getMemberNickname(),
+                        post.getMembers().getMemberEmail(),
+                        post.getMembers().getMemberStatus(),
+                        post.getPostSeq(),
+                        post.getPostTitle(),
+                        post.getPostContent(),
+                        post.getPostCategory(),
+                        post.getRegDate(),
+                        post.getModDate()
+                )).collect(Collectors.toList());
     }
 
     // 매거진 상세 조회
     @Transactional
-    public PostResDto getMagazine(Long magazineId) {
-        Post magazine = postRepository.findById(magazineId)
-                .orElseThrow(() -> new EntityNotFoundException("해당 매거진을 찾을 수 없습니다. ID = " + magazineId));
+    public PostResDto getMagazine(Long postId) {
+        Post post = postRepository.findById(postId)
+                .orElseThrow(() -> new EntityNotFoundException("해당 매거진을 찾을 수 없습니다. ID = " + postId));
 
-        if (magazine.getMembers().getMemberStatus() == MemberStatus.INACTIVE) {
+        if (post.getMembers().getMemberStatus() == MemberStatus.INACTIVE) {
             throw new IllegalStateException("비활성화된 유저입니다.");
         }
 
-        return PostResDto.fromEntity(magazine);
+        return PostResDto.fromEntity(post);
     }
 
     // 매거진 생성 기능
     @Transactional
-    public PostResDto createMagazine(PostReqDto magazineReqDTO) {
+    public PostResDto createMagazine(PostReqDto postReqDTO) {
 
-        Members members = membersRepository.findById(magazineReqDTO.getMemberSeq())
+        Members members = membersRepository.findById(postReqDTO.getMemberSeq())
                 .orElseThrow(()-> new EntityNotFoundException("해당 유저를 찾을 수 없습니다."));
 
-        Post magazine = new Post(members, magazineReqDTO.getMagazine_title(), magazineReqDTO.getMagazine_content());
+        Post post = new Post(members, postReqDTO.getPost_title(), postReqDTO.getPost_content(), postReqDTO.getPost_category());
 
-        magazine = postRepository.save(magazine);
+        post = postRepository.save(post);
 
-        return PostResDto.fromEntity(magazine);
+        return PostResDto.fromEntity(post);
     }
 
     // 매거진 수정 기능
@@ -98,13 +112,13 @@ public class PostService {
         }
 
         // 제목 수정이 있으면 저장
-        if (magazineReqDTO.getMagazine_title() != null && !magazineReqDTO.getMagazine_title().isBlank()) {
-            magazine.updateTitle(magazineReqDTO.getMagazine_title());
+        if (magazineReqDTO.getPost_title() != null && !magazineReqDTO.getPost_title().isBlank()) {
+            magazine.updateTitle(magazineReqDTO.getPost_title());
         }
 
         // 내용 수정이 있으면 저장
-        if (magazineReqDTO.getMagazine_content() != null && !magazineReqDTO.getMagazine_content().isBlank()) {
-            magazine.updateContent(magazineReqDTO.getMagazine_content());
+        if (magazineReqDTO.getPost_content() != null && !magazineReqDTO.getPost_content().isBlank()) {
+            magazine.updateContent(magazineReqDTO.getPost_content());
         }
 
         return PostResDto.fromEntity(magazine);
@@ -141,10 +155,10 @@ public class PostService {
      * @param newestFirst if true, sort results by `regDate` descending; if false, sort ascending
      * @return a list of MagazineResDTOs representing matched magazines (may be empty)
      */
-    public List<PostResDto> searchMagzine(String keyword, LocalDateTime start, LocalDateTime end, boolean newestFirst) {
+    public List<PostResDto> searchPost(String keyword, LocalDateTime start, LocalDateTime end, boolean newestFirst) {
         Specification<Post> spec = Specification
-                .where(MagazineSpecification.titleOrContentContains(keyword))
-                .and(MagazineSpecification.regDateBetween(start, end));
+                .where(PostSpecification.titleOrContentContains(keyword))
+                .and(PostSpecification.regDateBetween(start, end));
 
         Sort sort = newestFirst ? Sort.by("regDate").descending() : Sort.by("regDate").ascending();
 
@@ -158,10 +172,10 @@ public class PostService {
                         magazine.getMembers().getMemberNickname(),
                         magazine.getMembers().getMemberEmail(),
                         magazine.getMembers().getMemberStatus(),
-                        magazine.getMagazineSeq(),
-                        magazine.getMagazineTitle(),
-                        magazine.getMagazineContent(),
-                        magazine.getMagazineCategory(),
+                        magazine.getPostSeq(),
+                        magazine.getPostTitle(),
+                        magazine.getPostContent(),
+                        magazine.getPostCategory(),
                         magazine.getRegDate(),
                         magazine.getModDate()
                 ))

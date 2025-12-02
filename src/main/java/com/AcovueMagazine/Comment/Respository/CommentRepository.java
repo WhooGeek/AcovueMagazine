@@ -11,8 +11,8 @@ import java.util.List;
 public interface CommentRepository extends JpaRepository<Comment,Long> {
 
     // 최초 댓글만 조회
-    @Query("SELECT c FROM Comment c WHERE c.parent IS NULL AND c.magazine.magazineSeq = :magazineId AND c.commentStatus = 'ACTIVE'")
-    List<Comment> findTopCommentsByMagazine(@Param("magazineId") Long magazineId);
+    @Query("SELECT c FROM Comment c WHERE c.parent IS NULL AND c.post.postSeq = :postId AND c.commentStatus = 'ACTIVE'")
+    List<Comment> findTopCommentsByPost(@Param("postId") Long postId);
 
     // 최초 댓글 Seq 조회
     @Query("SELECT c FROM Comment c WHERE c.parent.commentSeq = :parentSeq AND c.commentStatus = 'ACTIVE' ")

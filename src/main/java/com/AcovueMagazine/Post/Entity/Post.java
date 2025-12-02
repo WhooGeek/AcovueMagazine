@@ -11,23 +11,23 @@ import java.time.LocalDateTime;
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@Table(name = "Magazine")
+@Table(name = "post")
 public class Post {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "magazine_seq", nullable = false)
-    private Long magazineSeq;
+    @Column(name = "post_seq", nullable = false)
+    private Long postSeq;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member_seq", nullable = false)
     private Members members;
 
-    @Column(name = "magazine_title", nullable = false)
-    private String magazineTitle;
+    @Column(name = "post_title", nullable = false)
+    private String postTitle;
 
-    @Column(name = "magazine_content", nullable = false)
-    private String magazineContent;
+    @Column(name = "post_content", nullable = false)
+    private String postContent;
 
     @Column(name = "reg_date", updatable = false)
     private LocalDateTime regDate;
@@ -40,21 +40,23 @@ public class Post {
     @Column(name = "mod_date")
     private LocalDateTime modDate;
 
-    @Column(name = "magazine_category")
-    private PostType magazineCategory;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "post_category")
+    private PostType postCategory;
 
-    public Post(Members members, String magazineTitle, String magazineContent) {
+    public Post(Members members, String postTitle, String postContent, PostType postCategory) {
         this.members = members;
-        this.magazineTitle = magazineTitle;
-        this.magazineContent = magazineContent;
+        this.postTitle = postTitle;
+        this.postContent = postContent;
+        this.postCategory = postCategory;
     }
 
     public void updateTitle(String title) {
-        this.magazineTitle = title;
+        this.postTitle = title;
     }
 
     public void updateContent(String content) {
-        this.magazineContent = content;
+        this.postContent = content;
     }
 
 

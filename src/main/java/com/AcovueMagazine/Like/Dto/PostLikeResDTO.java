@@ -1,6 +1,6 @@
 package com.AcovueMagazine.Like.Dto;
 
-import com.AcovueMagazine.Like.Entity.MagazineLike;
+import com.AcovueMagazine.Like.Entity.PostLike;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -10,21 +10,21 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class MagazineLikeResDTO {
+public class PostLikeResDTO {
 
     private Long likeSeq;
     private Long userSeq;
-    private Long magazineSeq;
+    private Long postSeq;
     private boolean liked;
 
-    public static MagazineLikeResDTO fromEntity(MagazineLike like) {
+    public static PostLikeResDTO fromEntity(PostLike like) {
         if (like == null) {
-            return new MagazineLikeResDTO(null, null, null, false);
+            return new PostLikeResDTO(null, null, null, false);
         }
-        return new MagazineLikeResDTO(
+        return new PostLikeResDTO(
                 like.getLikeSeq(),
                 like.getMembers().getMember_seq(),
-                like.getMagazine().getMagazineSeq(),
+                like.getPost().getPostSeq(),
                 true
         );
     }

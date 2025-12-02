@@ -17,7 +17,7 @@ public class CommentReqDTO {
     private Long userSeq;
     private Long commentSeq;
     private String commentContent;
-    private Long magazineSeq;
+    private Long postSeq;
     private Long parentSeq;
 
     public static CommentResDTO fromEntity(Comment comment) {

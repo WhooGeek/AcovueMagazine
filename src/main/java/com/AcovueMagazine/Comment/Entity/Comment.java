@@ -40,12 +40,12 @@ public class Comment {
     private List<Comment> children = new ArrayList<>();
 
     @ManyToOne
-    @JoinColumn(name = "magazine_seq", nullable = false)
-    private Post magazine;
+    @JoinColumn(name = "post_seq", nullable = false)
+    private Post post;
 
-    public Comment(Members member, Post magazine, String commentContent, Comment parent) {
+    public Comment(Members member, Post post, String commentContent, Comment parent) {
         this.member = member;
-        this.magazine = magazine;
+        this.post = post;
         this.commentContent = commentContent;
         this.parent = parent;
         this.commentStatus = CommentStatus.ACTIVE; // 기본값 설정
