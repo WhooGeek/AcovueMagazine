@@ -1,4 +1,4 @@
-package com.AcovueMagazine.Magazine.Entity;
+package com.AcovueMagazine.Post.Entity;
 
 import com.AcovueMagazine.Member.Entity.Members;
 import jakarta.persistence.*;
@@ -12,7 +12,7 @@ import java.time.LocalDateTime;
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Table(name = "Magazine")
-public class Magazine {
+public class Post {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -40,7 +40,10 @@ public class Magazine {
     @Column(name = "mod_date")
     private LocalDateTime modDate;
 
-    public Magazine(Members members, String magazineTitle, String magazineContent) {
+    @Column(name = "magazine_category")
+    private PostType magazineCategory;
+
+    public Post(Members members, String magazineTitle, String magazineContent) {
         this.members = members;
         this.magazineTitle = magazineTitle;
         this.magazineContent = magazineContent;

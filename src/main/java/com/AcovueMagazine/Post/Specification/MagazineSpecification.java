@@ -1,6 +1,6 @@
-package com.AcovueMagazine.Magazine.Specification;
+package com.AcovueMagazine.Post.Specification;
 
-import com.AcovueMagazine.Magazine.Entity.Magazine;
+import com.AcovueMagazine.Post.Entity.Post;
 import org.springframework.data.jpa.domain.Specification;
 
 import java.time.LocalDateTime;
@@ -15,7 +15,7 @@ public class MagazineSpecification {
      * @param keyword substring to search for in {@code magazineTitle} or {@code magazineContent}; case is ignored
      * @return a {@code Specification<Magazine>} performing a case-insensitive LIKE on title or content, or {@code null} when no predicate should be applied
      */
-    public static Specification<Magazine> titleOrContentContains(String keyword){
+    public static Specification<Post> titleOrContentContains(String keyword){
         return (root, query, builder) -> {
             if (keyword == null || keyword.isEmpty()) return null;
             return builder.or(
@@ -37,7 +37,7 @@ public class MagazineSpecification {
      * @param end   the upper bound of the registration date range (inclusive); may be null
      * @return a Specification<Magazine> representing the date-range predicate, or null if neither bound is provided
      */
-    public static Specification<Magazine> regDateBetween(LocalDateTime start, LocalDateTime end) {
+    public static Specification<Post> regDateBetween(LocalDateTime start, LocalDateTime end) {
         return(root, query, builder) -> {
             if(start == null && end == null) return null;
             if(start != null && end != null) return builder.between(root.get("regDate"), start, end);
