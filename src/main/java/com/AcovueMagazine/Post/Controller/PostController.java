@@ -1,11 +1,11 @@
-package com.AcovueMagazine.Magazine.Controller;
+package com.AcovueMagazine.Post.Controller;
 
 
 import com.AcovueMagazine.Common.Response.ApiResponse;
 import com.AcovueMagazine.Common.Response.ResponseUtil;
-import com.AcovueMagazine.Magazine.Dto.MagazineReqDTO;
-import com.AcovueMagazine.Magazine.Dto.MagazineResDTO;
-import com.AcovueMagazine.Magazine.Service.MagazineService;
+import com.AcovueMagazine.Post.Dto.PostReqDto;
+import com.AcovueMagazine.Post.Dto.PostResDto;
+import com.AcovueMagazine.Post.Service.PostService;
 import com.AcovueMagazine.Member.Entity.Members;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -17,9 +17,9 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/magazine")
 @RequiredArgsConstructor
-public class MagazineController {
+public class PostController {
 
-    private final MagazineService magazineService;
+    private final PostService postService;
 
     /**
      * Searches magazines matching the optional criteria and returns the results wrapped in an ApiResponse.
@@ -41,7 +41,7 @@ public class MagazineController {
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime end,
             @RequestParam(defaultValue = "true") boolean newestFirst
     ){
-        List<MagazineResDTO> searchResults = magazineService.searchMagzine(keyword, start, end, newestFirst);
+        List<PostResDto> searchResults = postService.searchMagzine(keyword, start, end, newestFirst);
         return ResponseUtil.successResponse("매거진 검색을 성공적으로 수행하였습니다.", searchResults).getBody();
     }
 
@@ -52,35 +52,35 @@ public class MagazineController {
      */
     @GetMapping("/find/all")
     public ApiResponse<?> getMagazineList() {
-        List<MagazineResDTO> magazines = magazineService.getAllMagazines();
+        List<PostResDto> magazines = postService.getAllMagazines();
         return ResponseUtil.successResponse("매거진 전체 조회를 성공적으로 수행하였습니다.", magazines).getBody();
     }
 
     // 매거진 상세조회
     @GetMapping("/find/{magazineId}")
     public ApiResponse<?> getMagazineById(@PathVariable Long magazineId) {
-        MagazineResDTO magazine = magazineService.getMagazine(magazineId);
+        PostResDto magazine = postService.getMagazine(magazineId);
         return ResponseUtil.successResponse("매거진 상세조회를 성공적으로 수행하였습니다.", magazine).getBody();
     }
 
     // 매거진 등록
     @PostMapping("/create")
-    public ApiResponse<?> createMagazine(@RequestBody MagazineReqDTO magazineReqDTO) {
-        MagazineResDTO magazine = magazineService.createMagazine(magazineReqDTO);
+    public ApiResponse<?> createMagazine(@RequestBody PostReqDto magazineReqDTO) {
+        PostResDto magazine = postService.createMagazine(magazineReqDTO);
         return ResponseUtil.successResponse("매거진 생성을 성공적으로 수행하였습니다.", magazine).getBody();
     }
 
     // 매거진 수정
     @PutMapping("/update/{magazineId}")
-    public ApiResponse<?> updateMagazine(@PathVariable Long magazineId, @RequestBody MagazineReqDTO magazineReqDTO) {
-        MagazineResDTO magazine = magazineService.updateMagazine(magazineReqDTO, magazineId);
+    public ApiResponse<?> updateMagazine(@PathVariable Long magazineId, @RequestBody PostReqDto magazineReqDTO) {
+        PostResDto magazine = postService.updateMagazine(magazineReqDTO, magazineId);
         return ResponseUtil.successResponse("매거진 수정이 성공적으로 수행되었습니다.", magazine).getBody();
     }
 
     // 매거진 삭제
     @DeleteMapping("/delete/{magazineId}")
     public ApiResponse<?> deleteMagazine(@PathVariable Long magazineId, @RequestBody Members members) {
-        MagazineResDTO magazine = magazineService.deleteMagazine(magazineId, members);
+        PostResDto magazine = postService.deleteMagazine(magazineId, members);
 
         return ResponseUtil.successResponse("매거진 삭제를 성공적으로 수행하였습니다", magazine).getBody();
     }

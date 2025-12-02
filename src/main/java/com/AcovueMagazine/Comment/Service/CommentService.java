@@ -3,8 +3,8 @@ import com.AcovueMagazine.Comment.Dto.CommentReqDTO;
 import com.AcovueMagazine.Comment.Dto.CommentResDTO;
 import com.AcovueMagazine.Comment.Entity.Comment;
 import com.AcovueMagazine.Comment.Respository.CommentRepository;
-import com.AcovueMagazine.Magazine.Entity.Magazine;
-import com.AcovueMagazine.Magazine.Repository.MagazineRepository;
+import com.AcovueMagazine.Post.Entity.Post;
+import com.AcovueMagazine.Post.Repository.PostRepository;
 import com.AcovueMagazine.Member.Entity.MemberRole;
 import com.AcovueMagazine.Member.Entity.Members;
 import com.AcovueMagazine.Member.Repository.MembersRepository;
@@ -22,7 +22,7 @@ import java.util.List;
 public class CommentService {
 
     private final CommentRepository commentRepository;
-    private final MagazineRepository magazineRepository;
+    private final PostRepository magazineRepository;
     private final MembersRepository membersRepository;
 
     // 댓글 + 대댓글 조회 기능
@@ -30,7 +30,7 @@ public class CommentService {
     public List<CommentResDTO> getComment(Long magazineId) {
 
         // 매거진 유효성 검사
-        Magazine magazine = magazineRepository.findById(magazineId)
+        Post magazine = magazineRepository.findById(magazineId)
                 .orElseThrow(() -> new EntityNotFoundException("해당 매거진을 찾을 수 없습니다. ID = " + magazineId));
 
         // 최초 댓글 조회
@@ -64,7 +64,7 @@ public class CommentService {
                 .orElseThrow(()-> new EntityNotFoundException("해당 유저를 찾을 수 없습니다."));
 
         // 매거진 유효성 검사
-        Magazine magazine = magazineRepository.findById(magazineId)
+        Post magazine = magazineRepository.findById(magazineId)
                 .orElseThrow(() -> new EntityNotFoundException("해당 매거진을 찾을 수 없습니다. ID = " + magazineId));
 
         Comment parentComment = null;
@@ -90,7 +90,7 @@ public class CommentService {
                 .orElseThrow(() -> new EntityNotFoundException("해당 유저를 찾을 수 없습니다. ID = " + commentReqDTO.getUserSeq()) );
 
         // 매거진 조회
-        Magazine magazine = magazineRepository.findById(magazineId)
+        Post magazine = magazineRepository.findById(magazineId)
                 .orElseThrow(() -> new EntityNotFoundException("해당 매거진을 찾을 수 없습니다. ID = " + magazineId));
 
         // 댓글 조회
@@ -120,7 +120,7 @@ public class CommentService {
                 .orElseThrow(() -> new EntityNotFoundException("해당 유저를 찾을 수 없습니다. ID = " + commentReqDTO.getUserSeq()) );
 
         // 매거진 조회
-        Magazine magazine = magazineRepository.findById(magazineId)
+        Post magazine = magazineRepository.findById(magazineId)
                 .orElseThrow(() -> new EntityNotFoundException("해당 매거진을 찾을 수 없습니다. ID = " + magazineId));
 
         // 댓글 조회

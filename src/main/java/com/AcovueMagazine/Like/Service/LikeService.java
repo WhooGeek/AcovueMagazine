@@ -10,8 +10,8 @@ import com.AcovueMagazine.Like.Entity.CommentLike;
 import com.AcovueMagazine.Like.Entity.MagazineLike;
 import com.AcovueMagazine.Like.Respository.CommentLikeRepository;
 import com.AcovueMagazine.Like.Respository.MagazineLikeRepository;
-import com.AcovueMagazine.Magazine.Entity.Magazine;
-import com.AcovueMagazine.Magazine.Repository.MagazineRepository;
+import com.AcovueMagazine.Post.Entity.Post;
+import com.AcovueMagazine.Post.Repository.PostRepository;
 import com.AcovueMagazine.Member.Entity.Members;
 import com.AcovueMagazine.Member.Repository.MembersRepository;
 import jakarta.persistence.EntityNotFoundException;
@@ -27,7 +27,7 @@ public class LikeService {
 
     private final MagazineLikeRepository magazineLikeRepository;
     private final CommentLikeRepository commentLikeRepository;
-    private final MagazineRepository magazineRepository;
+    private final PostRepository magazineRepository;
     private final CommentRepository commentRepository;
     private final MembersRepository membersRepository;
 
@@ -38,7 +38,7 @@ public class LikeService {
         Members members = membersRepository.findById(userSeq)
                 .orElseThrow(() -> new EntityNotFoundException("해당 유저를 찾을 수 없습니다." + userSeq));
 
-        Magazine magazine = magazineRepository.findById(magazineSeq)
+        Post magazine = magazineRepository.findById(magazineSeq)
                 .orElseThrow(() -> new EntityNotFoundException("해당 매거진을 찾을 수 없습니다." + magazineSeq));
 
         Optional<MagazineLike> existing = magazineLikeRepository.findByMembersAndMagazine(members, magazine);
@@ -99,7 +99,7 @@ public class LikeService {
     @Transactional
     public MagazineLikeCountResDTO magazineLikeCount(Long magazineSeq) {
 
-        Magazine magazine = magazineRepository.findById(magazineSeq)
+        Post magazine = magazineRepository.findById(magazineSeq)
                 .orElseThrow(() -> new EntityNotFoundException("해당 매거진을 찾을 수 없습니다." + magazineSeq));
 
         Long magazineLikeCount = magazineLikeRepository.countByMagazine_MagazineSeq(magazineSeq);

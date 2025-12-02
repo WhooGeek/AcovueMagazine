@@ -1,7 +1,8 @@
-package com.AcovueMagazine.Magazine.Dto;
+package com.AcovueMagazine.Post.Dto;
 
-import com.AcovueMagazine.Magazine.Entity.Magazine;
+import com.AcovueMagazine.Post.Entity.Post;
 import com.AcovueMagazine.Member.Entity.MemberStatus;
+import com.AcovueMagazine.Post.Entity.PostType;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -13,7 +14,7 @@ import java.time.LocalDateTime;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class MagazineResDTO {
+public class PostResDto {
 
     private Long memberSeq;
     private String memberName;
@@ -23,13 +24,14 @@ public class MagazineResDTO {
     private Long magazineSeq;
     private String magazineTitle;
     private String magazineContent;
+    private PostType magazine_category;
     private LocalDateTime regDate;
     private LocalDateTime modDate;
 
 
     // Entity -> DTO
-    public static MagazineResDTO fromEntity(Magazine magazine) {
-        return new MagazineResDTO(
+    public static PostResDto fromEntity(Post magazine) {
+        return new PostResDto(
                 magazine.getMembers().getMember_seq(),
                 magazine.getMembers().getMemberName(),
                 magazine.getMembers().getMemberNickname(),
@@ -38,6 +40,7 @@ public class MagazineResDTO {
                 magazine.getMagazineSeq(),
                 magazine.getMagazineTitle(),
                 magazine.getMagazineContent(),
+                magazine.getMagazineCategory(),
                 magazine.getRegDate(),
                 magazine.getModDate()
         );
