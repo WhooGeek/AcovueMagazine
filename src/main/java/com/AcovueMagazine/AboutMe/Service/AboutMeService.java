@@ -1,10 +1,10 @@
 package com.AcovueMagazine.AboutMe.Service;
 
 import com.AcovueMagazine.AboutMe.Dto.AboutMeReqDto;
+import com.AcovueMagazine.AboutMe.Dto.AboutMeResDto;
 import com.AcovueMagazine.AboutMe.Entity.AboutMe;
 import com.AcovueMagazine.AboutMe.Repository.AboutMeRepository;
 import com.AcovueMagazine.Member.Util.JwtTokenProvider;
-import com.AcovueMagazine.Post.Dto.PostResDto;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.AccessDeniedException;
@@ -17,6 +17,14 @@ public class AboutMeService {
 
     private final AboutMeRepository aboutMeRepository;
     private final JwtTokenProvider jwtTokenProvider;
+
+    // About Me 조회 기능
+    public AboutMeResDto getAboutMe() {
+
+        AboutMe aboutMe = aboutMeRepository.findByaboutMeSeq(1);
+
+        return AboutMeResDto.fromEntity(aboutMe);
+    }
 
     // About me 수정 기능
     public AboutMeReqDto updateAboutMe(AboutMeReqDto aboutMeReqDto) {
@@ -49,4 +57,6 @@ public class AboutMeService {
 
         return AboutMeReqDto.fromEntity(aboutMe);
     }
+
+
 }
