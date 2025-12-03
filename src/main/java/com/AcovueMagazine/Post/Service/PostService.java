@@ -1,6 +1,9 @@
 package com.AcovueMagazine.Post.Service;
 
 
+import com.AcovueMagazine.Common.Response.ErrorCode;
+import com.AcovueMagazine.Common.Response.ResponseUtil;
+import com.AcovueMagazine.Member.Util.JwtTokenProvider;
 import com.AcovueMagazine.Post.Dto.PostReqDto;
 import com.AcovueMagazine.Post.Entity.Post;
 import com.AcovueMagazine.Post.Dto.PostResDto;
@@ -20,9 +23,12 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
+import javax.naming.InvalidNameException;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -34,6 +40,7 @@ public class PostService {
 
     private final PostRepository postRepository;
     private final MembersRepository membersRepository;
+    private final JwtTokenProvider jwtTokenProvider;
 
     // Post 조회 ( Limit, page, PostType )
     @Transactional
@@ -85,7 +92,22 @@ public class PostService {
     @Transactional
     public PostResDto createMagazine(PostReqDto postReqDTO) {
 
-        Members members = membersRepository.findById(postReqDTO.getMemberSeq())
+        String accessToken = jwtTokenProvider.resolveToken();
+
+        if (accessToken == null || accessToken.isEmpty()) {
+
+            // 추후 Custom Reaction으로 리펙토링 예정
+            throw new NullPointerException("토큰이 조회되지 않습니다.");
+        }
+
+        // memberSeq 꺼내기
+        Long memberSeq = jwtTokenProvider.getMemberSeqFromToken(accessToken);
+
+        if (memberSeq == null) {
+            throw new NullPointerException("해당 MemberSeq가 조회되지 않습니다.");
+        }
+
+        Members members = membersRepository.findById(memberSeq)
                 .orElseThrow(()-> new EntityNotFoundException("해당 유저를 찾을 수 없습니다."));
 
         Post post = new Post(members, postReqDTO.getPost_title(), postReqDTO.getPost_content(), postReqDTO.getPost_category());
@@ -97,31 +119,49 @@ public class PostService {
 
     // 매거진 수정 기능
     @Transactional
-    public PostResDto updateMagazine(PostReqDto magazineReqDTO, Long magazineId) {
+    public PostResDto updateMagazine(PostReqDto postReqDTO, Long postId) {
 
-        Post magazine = postRepository.findById(magazineId)
-                .orElseThrow(() -> new EntityNotFoundException("해당 매거진을 찾을 수 없습니다. ID = " + magazineId));
+        String accessToken = jwtTokenProvider.resolveToken();
 
-        Members members = membersRepository.findById(magazineReqDTO.getMemberSeq())
+        if (accessToken == null || accessToken.isEmpty()) {
+
+            // 추후 Custom Reaction으로 리펙토링 예정
+            throw new NullPointerException("토큰이 조회되지 않습니다.");
+        }
+
+        // memberSeq 꺼내기
+        Long memberSeq = jwtTokenProvider.getMemberSeqFromToken(accessToken);
+
+        if (memberSeq == null) {
+            throw new NullPointerException("해당 MemberSeq가 조회되지 않습니다.");
+        }
+
+        Post post = postRepository.findById(postId)
+                .orElseThrow(() -> new EntityNotFoundException("해당 매거진을 찾을 수 없습니다. ID = " + postId));
+
+        Members members = membersRepository.findById(memberSeq)
                 .orElseThrow(()-> new EntityNotFoundException("해당 유저를 찾을 수 없습니다."));
 
         // 권한 체크
-        if (!magazine.getMembers().getMember_seq().equals(members.getMember_seq()) &&
-                members.getMemberRole() != MemberRole.ADMIN) {
+        if (!post.getMembers().getMember_seq().equals(members.getMember_seq())) {
+            throw new AccessDeniedException("수정 권한이 없습니다.");
+        }
+
+        if (!post.getMembers().getMember_seq().equals(memberSeq)) {
             throw new AccessDeniedException("수정 권한이 없습니다.");
         }
 
         // 제목 수정이 있으면 저장
-        if (magazineReqDTO.getPost_title() != null && !magazineReqDTO.getPost_title().isBlank()) {
-            magazine.updateTitle(magazineReqDTO.getPost_title());
+        if (postReqDTO.getPost_title() != null && !postReqDTO.getPost_title().isBlank()) {
+            post.updateTitle(postReqDTO.getPost_title());
         }
 
         // 내용 수정이 있으면 저장
-        if (magazineReqDTO.getPost_content() != null && !magazineReqDTO.getPost_content().isBlank()) {
-            magazine.updateContent(magazineReqDTO.getPost_content());
+        if (postReqDTO.getPost_content() != null && !postReqDTO.getPost_content().isBlank()) {
+            post.updateContent(postReqDTO.getPost_content());
         }
 
-        return PostResDto.fromEntity(magazine);
+        return PostResDto.fromEntity(post);
     }
 
 
