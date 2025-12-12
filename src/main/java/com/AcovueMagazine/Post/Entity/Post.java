@@ -26,6 +26,7 @@ public class Post {
     @Column(name = "post_title", nullable = false)
     private String postTitle;
 
+    @Lob // Text 타입 지정
     @Column(name = "post_content", nullable = false)
     private String postContent;
 
