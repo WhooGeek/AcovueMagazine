@@ -21,6 +21,7 @@ public class AboutMe {
     @JoinColumn(name = "member_seq", nullable = false)
     private Members members;
 
+    @Lob // Text 타입 지정
     @Column(name = "about_me_content", nullable = false)
     private String aboutMeContent;
 
