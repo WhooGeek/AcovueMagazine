@@ -81,16 +81,16 @@ public class PostController {
     }
 
     // 매거진 수정
-    @PutMapping("/update/{magazineId}")
-    public ApiResponse<?> updateMagazine(@PathVariable Long magazineId, @RequestBody PostReqDto magazineReqDTO) {
-        PostResDto magazine = postService.updateMagazine(magazineReqDTO, magazineId);
+    @PutMapping("/update/{postId}")
+    public ApiResponse<?> updateMagazine(@PathVariable Long postId, @RequestBody PostReqDto PostReqDTO) {
+        PostResDto magazine = postService.updateMagazine(PostReqDTO, postId);
         return ResponseUtil.successResponse("매거진 수정이 성공적으로 수행되었습니다.", magazine).getBody();
     }
 
     // 매거진 삭제
-    @DeleteMapping("/delete/{magazineId}")
-    public ApiResponse<?> deleteMagazine(@PathVariable Long magazineId, @RequestBody Members members) {
-        PostResDto magazine = postService.deleteMagazine(magazineId, members);
+    @DeleteMapping("/delete/{postId}")
+    public ApiResponse<?> deleteMagazine(@PathVariable Long postId, @RequestBody Members members) {
+        PostResDto magazine = postService.deleteMagazine(postId, members);
 
         return ResponseUtil.successResponse("매거진 삭제를 성공적으로 수행하였습니다", magazine).getBody();
     }
