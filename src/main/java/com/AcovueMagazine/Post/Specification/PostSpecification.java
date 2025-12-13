@@ -19,8 +19,7 @@ public class PostSpecification {
         return (root, query, builder) -> {
             if (keyword == null || keyword.isEmpty()) return null;
             return builder.or(
-                    builder.like(builder.lower(root.get("postTitle")), "%" + keyword.toLowerCase() + "%"),
-                    builder.like(builder.lower(root.get("postContent")), "%" + keyword.toLowerCase() + "%")
+                    builder.like(builder.lower(root.get("postTitle")), "%" + keyword.toLowerCase() + "%")
             );
         };
     }
