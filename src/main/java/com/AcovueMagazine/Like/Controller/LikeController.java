@@ -45,7 +45,7 @@ public class LikeController {
     }
 
     // 매거진 좋아요 조회 기능
-    @GetMapping("magazine/{postSeq}")
+    @GetMapping("post/{postSeq}")
     public ApiResponse<?> getPostLike(@PathVariable Long postSeq){
         PostLikeCountResDTO postLikeCount = likeService.postLikeCount(postSeq);
 

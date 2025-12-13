@@ -53,12 +53,11 @@ public class SecurityConfig {
                 // 사용자 삭제 권한은 관리자만
                         .requestMatchers(HttpMethod.DELETE, "/user").hasRole("ADMIN")
                         .requestMatchers("/members/role").hasRole("USER")
-                        .requestMatchers(HttpMethod.POST, "/api/member/login").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/api/member/sing-up").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/api/member/logout").hasRole("USER")
+                        .requestMatchers(HttpMethod.POST, "/api/member/*").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/member/me/update").hasRole("USER")
-                        .requestMatchers(HttpMethod.GET, "/api/post/find/all").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/post/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/post/create").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/like/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/aboutMe").permitAll()
                 //이 밖의 모든 요청은 인증 필요
                         .anyRequest().authenticated()

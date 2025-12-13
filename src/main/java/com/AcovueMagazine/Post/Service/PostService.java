@@ -1,8 +1,5 @@
 package com.AcovueMagazine.Post.Service;
 
-
-import com.AcovueMagazine.Common.Response.ErrorCode;
-import com.AcovueMagazine.Common.Response.ResponseUtil;
 import com.AcovueMagazine.Member.Util.JwtTokenProvider;
 import com.AcovueMagazine.Post.Dto.PostReqDto;
 import com.AcovueMagazine.Post.Entity.Post;
@@ -23,12 +20,9 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
-import org.springframework.http.HttpStatus;
 import org.springframework.security.access.AccessDeniedException;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
-import javax.naming.InvalidNameException;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -166,9 +160,9 @@ public class PostService {
 
 
     @Transactional
-    public PostResDto deleteMagazine(Long magazineId, Members currentMembers) {
-        Post magazine = postRepository.findById(magazineId)
-                .orElseThrow(() -> new EntityNotFoundException("해당 매거진을 찾을 수 없습니다. ID = " + magazineId));
+    public PostResDto deleteMagazine(Long postId, Members currentMembers) {
+        Post magazine = postRepository.findById(postId)
+                .orElseThrow(() -> new EntityNotFoundException("해당 매거진을 찾을 수 없습니다. ID = " + postId));
 
 
         if (magazine.getMembers().getMember_seq().equals(currentMembers.getMember_seq()) ||

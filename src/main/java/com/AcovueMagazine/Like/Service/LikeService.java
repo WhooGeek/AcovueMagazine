@@ -87,8 +87,12 @@ public class LikeService {
     @Transactional
     public CommentLikeCountResDTO commentLikeCount(Long commentSeq) {
 
-        Comment comment = commentRepository.findById(commentSeq)
-                .orElseThrow(() -> new EntityNotFoundException("해당 댓글을 찾을 수 없습니다." + commentSeq));
+        Optional<Comment> comment = commentRepository.findById(commentSeq);
+
+        if (comment.isEmpty()){
+            Long likeCount = 0L;
+            return CommentLikeCountResDTO.from(commentSeq, likeCount);
+        }
 
         Long likeCount = commentLikeRepository.countByComment_CommentSeq(commentSeq);
 
