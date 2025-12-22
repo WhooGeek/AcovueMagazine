@@ -23,7 +23,7 @@ public class MemberDetail implements UserDetails {
         List<GrantedAuthority> authorities = new ArrayList<>();
 
         //역할 목록
-        GrantedAuthority roleAuthority = new SimpleGrantedAuthority("USER");
+        GrantedAuthority roleAuthority = new SimpleGrantedAuthority(member.getMemberRole().toString());
         authorities.add(roleAuthority);
         return authorities;
     }
