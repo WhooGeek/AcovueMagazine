@@ -54,11 +54,13 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.DELETE, "/user").hasRole("ADMIN")
                         .requestMatchers("/members/role").hasRole("USER")
                         .requestMatchers(HttpMethod.POST, "/api/member/*").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/api/member/me/update").hasRole("USER")
+                        .requestMatchers(HttpMethod.POST, "/api/member/me/update").hasAnyAuthority("USER", "ADMIN")
+                        .requestMatchers(HttpMethod.PUT, "/api/post/**").hasAnyAuthority("USER", "ADMIN")
                         .requestMatchers(HttpMethod.GET, "/api/post/**").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/api/post/create").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/post/create").hasAnyAuthority("USER", "ADMIN")
                         .requestMatchers(HttpMethod.GET, "/api/like/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/aboutMe").permitAll()
+                        .requestMatchers(HttpMethod.PUT, "/api/aboutMe/**").hasAnyAuthority( "ADMIN")
                 //이 밖의 모든 요청은 인증 필요
                         .anyRequest().authenticated()
                 );
