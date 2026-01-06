@@ -137,11 +137,15 @@ public class PostService {
                 .orElseThrow(()-> new EntityNotFoundException("해당 유저를 찾을 수 없습니다."));
 
         // 권한 체크
-        if (!post.getMembers().getMember_seq().equals(members.getMember_seq())) {
-            throw new AccessDeniedException("수정 권한이 없습니다.");
-        }
+        // 1. 작성자인지 확인 (게시글 작성자 ID == 현재 로그인한 유저 ID)
+        boolean isWriter = post.getMembers().getMember_seq().equals(members.getMember_seq());
 
-        if (!post.getMembers().getMember_seq().equals(memberSeq)) {
+        // 2. 관리자인지 확인 (현재 로그인한 유저의 Role이 ADMIN인지)
+        // 주의: post.getMembers()가 아니라 현재 로그인한 'members'의 권한을 확인해야 합니다.
+        boolean isAdmin = (members.getMemberRole() == MemberRole.ADMIN);
+
+        // 3. 검증: 작성자도 아니고(AND) 관리자도 아니면 -> 권한 없음 예외 발생
+        if (!isWriter && !isAdmin) {
             throw new AccessDeniedException("수정 권한이 없습니다.");
         }
 

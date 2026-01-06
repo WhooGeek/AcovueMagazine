@@ -116,18 +116,23 @@ public class JwtTokenProvider {
     public Authentication getAuthentication(String accessToken) {
         //JWT 토큰 복호화
         Claims claims = parseClaims(accessToken);
+
         if(claims.get("auth") == null){
             throw new RuntimeException("권한 정보가 없는 토큰입니다.");
         }
 
         //Claim에 있는 정보 가져오기
         Collection<? extends GrantedAuthority> authorities = Arrays.stream(claims.get("auth").toString().split(","))
-                .map(SimpleGrantedAuthority::new) // SimpleGrantedAuthority 객체 -> 컬랙션
+                .map(SimpleGrantedAuthority::new)
                 .toList();
+
+        // memberSeq 꺼내기
+        Long memberSeq = this.getMemberSeqFromToken(accessToken);
 
         //UserDetails 객체 만들어서 Authentication return
         //UserDetails: interface, Member: UserDetails 로 구현한 클래스
-        UserDetails principal = new User(claims.getSubject(), "", authorities);
+        PrincipalDetails principal = new PrincipalDetails(memberSeq, claims.getSubject(), authorities);
+
         return new UsernamePasswordAuthenticationToken(principal, "", authorities);
 
     }
