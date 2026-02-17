@@ -3,6 +3,7 @@ package com.AcovueMagazine.Member.Service;
 import com.AcovueMagazine.Common.Response.ErrorCode;
 import com.AcovueMagazine.Common.Response.ResponseUtil;
 import com.AcovueMagazine.Member.Dao.RedisDao;
+import com.AcovueMagazine.Member.Dto.MemberDataDto;
 import com.AcovueMagazine.Member.Dto.MemberLoginDto;
 import com.AcovueMagazine.Member.Dto.MemberSignUpDto;
 import com.AcovueMagazine.Member.Dto.MemberUpdateDto;
@@ -166,7 +167,7 @@ public class MemberService {
             Members existingNickName = membersRepository.findByMemberNickname(memberUpdateDto.getMemberNickname())
                     .orElse(null);
 
-            if (existingNickName != null && !existingNickName.getMember_seq().equals(memberSeq)) {
+            if (existingNickName != null && !existingNickName.getMemberSeq().equals(memberSeq)) {
                 throw new IllegalArgumentException("이미 사용 중인 닉네임입니다.");
             }
 
@@ -201,5 +202,14 @@ public class MemberService {
 
         return member;
 
+    }
+
+    // 내 정보 조회
+    public MemberDataDto getMemberData(Long memberSeq) {
+
+        Members members = membersRepository.findById(memberSeq)
+                .orElseThrow(() -> new EntityNotFoundException("해당 회원을 찾을 수 없습니다."));
+
+        return MemberDataDto.from(members);
     }
 }
