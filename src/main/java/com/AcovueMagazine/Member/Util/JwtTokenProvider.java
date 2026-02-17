@@ -67,7 +67,7 @@ public class JwtTokenProvider {
 
         Object principal = authentication.getPrincipal();
         if (principal instanceof MemberDetail memberDetail) {
-            memberSeq = memberDetail.getMember().getMember_seq();
+            memberSeq = memberDetail.getMember().getMemberSeq();
         } else if(principal instanceof User user){
             throw new IllegalArgumentException("MemberSeq를 가져올 수 없습니다.");
         } else{

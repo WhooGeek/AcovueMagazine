@@ -32,7 +32,7 @@ public class PostResDto {
     // Entity -> DTO
     public static PostResDto fromEntity(Post magazine) {
         return new PostResDto(
-                magazine.getMembers().getMember_seq(),
+                magazine.getMembers().getMemberSeq(),
                 magazine.getMembers().getMemberName(),
                 magazine.getMembers().getMemberNickname(),
                 magazine.getMembers().getMemberEmail(),

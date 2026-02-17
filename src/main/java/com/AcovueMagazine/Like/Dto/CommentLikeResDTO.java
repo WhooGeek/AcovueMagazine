@@ -24,7 +24,7 @@ public class CommentLikeResDTO {
         }
         return new CommentLikeResDTO(
                 like.getLikeSeq(),
-                like.getMembers().getMember_seq(),
+                like.getMembers().getMemberSeq(),
                 like.getComment().getCommentSeq(),
                 true
         );

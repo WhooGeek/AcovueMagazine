@@ -55,7 +55,7 @@ public class PostService {
 
         return postPage.getContent().stream()
                 .map(post -> new PostResDto(
-                        post.getMembers().getMember_seq(),
+                        post.getMembers().getMemberSeq(),
                         post.getMembers().getMemberName(),
                         post.getMembers().getMemberNickname(),
                         post.getMembers().getMemberEmail(),
@@ -138,7 +138,7 @@ public class PostService {
 
         // 권한 체크
         // 1. 작성자인지 확인 (게시글 작성자 ID == 현재 로그인한 유저 ID)
-        boolean isWriter = post.getMembers().getMember_seq().equals(members.getMember_seq());
+        boolean isWriter = post.getMembers().getMemberSeq().equals(members.getMemberSeq());
 
         // 2. 관리자인지 확인 (현재 로그인한 유저의 Role이 ADMIN인지)
         // 주의: post.getMembers()가 아니라 현재 로그인한 'members'의 권한을 확인해야 합니다.
@@ -169,7 +169,7 @@ public class PostService {
                 .orElseThrow(() -> new EntityNotFoundException("해당 매거진을 찾을 수 없습니다. ID = " + postId));
 
 
-        if (magazine.getMembers().getMember_seq().equals(currentMembers.getMember_seq()) ||
+        if (magazine.getMembers().getMemberSeq().equals(currentMembers.getMemberSeq()) ||
                 currentMembers.getMemberRole() == MemberRole.ADMIN) {
             postRepository.delete(magazine);
         } else {
@@ -205,7 +205,7 @@ public class PostService {
 
         return searchMagazines.stream()
                 .map(magazine -> new PostResDto(
-                        magazine.getMembers().getMember_seq(),
+                        magazine.getMembers().getMemberSeq(),
                         magazine.getMembers().getMemberName(),// 엔티티 필드에 맞춰서
                         magazine.getMembers().getMemberNickname(),
                         magazine.getMembers().getMemberEmail(),

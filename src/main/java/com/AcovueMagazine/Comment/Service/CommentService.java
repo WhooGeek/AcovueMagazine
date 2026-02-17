@@ -98,7 +98,7 @@ public class CommentService {
                 .orElseThrow(() -> new EntityNotFoundException("해당 댓글을 찾을 수 없습니다." + commentReqDTO.getCommentSeq()));
 
         // 권한 체크
-        if (!magazine.getMembers().getMember_seq().equals(members.getMember_seq()) &&
+        if (!magazine.getMembers().getMemberSeq().equals(members.getMemberSeq()) &&
                 members.getMemberRole() != MemberRole.ADMIN) {
             throw new AccessDeniedException("수정 권한이 없습니다.");
         }
@@ -128,7 +128,7 @@ public class CommentService {
                 .orElseThrow(() -> new EntityNotFoundException("해당 댓글을 찾을 수 없습니다." + commentReqDTO.getCommentSeq()));
 
         if(comment.getMember().getMemberRole() != MemberRole.ADMIN ||
-            members.getMember_seq() == comment.getMember().getMember_seq()) {
+            members.getMemberSeq() == comment.getMember().getMemberSeq()) {
             commentRepository.delete(comment);
         } else{
             throw new AccessDeniedException("삭제 권한이 없습니다.");
