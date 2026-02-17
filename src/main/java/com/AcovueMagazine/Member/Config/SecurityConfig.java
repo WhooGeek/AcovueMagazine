@@ -50,20 +50,22 @@ public class SecurityConfig {
         // http request 인증
         httpSecurity.authorizeHttpRequests(authorize ->
                 authorize.requestMatchers(permitAllList).permitAll()
-                // 사용자 삭제 권한은 관리자만
+                        // 사용자 삭제 권한은 관리자만
                         .requestMatchers(HttpMethod.DELETE, "/user").hasRole("ADMIN")
                         .requestMatchers("/members/role").hasRole("USER")
                         .requestMatchers(HttpMethod.POST, "/api/member/*").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/member/me/update").hasAnyAuthority("USER", "ADMIN")
                         .requestMatchers(HttpMethod.PUT, "/api/post/**").hasAnyAuthority("USER", "ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/api/post/**").hasAnyAuthority("USER", "ADMIN")
                         .requestMatchers(HttpMethod.GET, "/api/post/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/post/create").hasAnyAuthority("USER", "ADMIN")
                         .requestMatchers(HttpMethod.GET, "/api/like/**").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/like/**").hasAnyAuthority("USER", "ADMIN")
                         .requestMatchers(HttpMethod.GET, "/api/aboutMe").permitAll()
                         .requestMatchers(HttpMethod.PUT, "/api/aboutMe/**").hasAnyAuthority( "ADMIN")
-                //이 밖의 모든 요청은 인증 필요
+                        //이 밖의 모든 요청은 인증 필요
                         .anyRequest().authenticated()
-                );
+        );
 
         // jwt 인증을 위해 구현한 커스텀 필터를 UsernamePasswordAuthnticationFilter 전에 실행
         httpSecurity.addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider, redisDao),
