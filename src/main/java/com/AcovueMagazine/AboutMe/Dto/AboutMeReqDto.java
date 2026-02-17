@@ -17,7 +17,7 @@ public class AboutMeReqDto {
 
     public static AboutMeReqDto fromEntity(AboutMe aboutMe) {
         return new AboutMeReqDto(
-                aboutMe.getMembers().getMember_seq(),
+                aboutMe.getMembers().getMemberSeq(),
                 aboutMe.getAboutMeContent()
         );
     }

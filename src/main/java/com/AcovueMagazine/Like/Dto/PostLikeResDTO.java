@@ -23,7 +23,7 @@ public class PostLikeResDTO {
         }
         return new PostLikeResDTO(
                 like.getLikeSeq(),
-                like.getMembers().getMember_seq(),
+                like.getMembers().getMemberSeq(),
                 like.getPost().getPostSeq(),
                 true
         );

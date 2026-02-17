@@ -3,6 +3,7 @@ package com.AcovueMagazine.Member.Controller;
 import com.AcovueMagazine.Common.Response.ApiResponse;
 import com.AcovueMagazine.Common.Response.ErrorCode;
 import com.AcovueMagazine.Common.Response.ResponseUtil;
+import com.AcovueMagazine.Member.Dto.MemberDataDto;
 import com.AcovueMagazine.Member.Dto.MemberLoginDto;
 import com.AcovueMagazine.Member.Dto.MemberSignUpDto;
 import com.AcovueMagazine.Member.Dto.MemberUpdateDto;
@@ -49,7 +50,7 @@ public class MemberController {
 
         if (principal instanceof MemberDetail memberDetail){
             email = memberDetail.getUsername();
-            memberSeq = memberDetail.getMember().getMember_seq();
+            memberSeq = memberDetail.getMember().getMemberSeq();
         } else if (principal instanceof org.springframework.security.core.userdetails.User user){
             email = user.getUsername();
         }else{
@@ -91,6 +92,29 @@ public class MemberController {
 
         return ResponseUtil.successResponse("성공적으로 회원 상태가 비활성화 되었습니다.", memberSeq).getBody();
     }
+
+    // 회원 내 정보 조회
+    @GetMapping("/me")
+    public ApiResponse<?> getUserData(Authentication authentication){
+
+        String accessToken = jwtTokenProvider.resolveToken();
+
+        if (accessToken == null) {
+            return ResponseUtil.failureResponse("토큰 정보가 없습니다.", ErrorCode.INVALID_TOKEN.getCode(), HttpStatus.UNAUTHORIZED).getBody();
+        }
+
+        // memberSeq 꺼내기
+        Long memberSeq = jwtTokenProvider.getMemberSeqFromToken(accessToken);
+
+        if (memberSeq == null) {
+            return ResponseUtil.failureResponse("회원 정보를 확인할 수 없습니다.", ErrorCode.USER_NOT_FOUND.getCode(), HttpStatus.BAD_REQUEST).getBody();
+        }
+
+        MemberDataDto member = memberService.getMemberData(memberSeq);
+
+        return ResponseUtil.successResponse("마이페이지, 내 정보 조회를 성공적으로 수행하였습니다.", member).getBody();
+    }
+
 
     // 회원 수정
     @PutMapping("/me/update")
