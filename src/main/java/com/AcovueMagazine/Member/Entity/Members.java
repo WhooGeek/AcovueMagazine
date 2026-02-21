@@ -51,12 +51,14 @@ public class Members {
     @Column(name = "mod_date")
     private LocalDateTime modDate;
 
-    //provider = Google
+    // OAuth 로그인 시 유저가 어디에서 로그인하는건지 알기위한 엔티티
+    // 일반 로그인은 null, google, naver, kakao
     private String provider;
 
-    // providerId = 구글 로그인 한 유저의 고유 ID가 들어감
+    // 소셜 로그인 해주는곳에서 제공해주는 고유 아이디
     private String providerId;
 
+    @Builder
     public Members(String memberName, String memberNickname, String memberEmail,
                    String memberPassword, MemberRole memberRole, MemberStatus memberStatus,
                    MemberLoginStatus memberLoginStatus, String provider, String providerId) {

@@ -1,9 +1,14 @@
 spring:
+
+# DB 설정
+
   datasource:
     url: ${DB_URL}
     username: ${DB_USERNAME}
     password: ${DB_PASSWORD}
     driver-class-name: com.mysql.cj.jdbc.Driver
+
+# JPA 설정
 
   jpa:
     hibernate:
@@ -13,6 +18,8 @@ spring:
       hibernate:
         dialect: org.hibernate.dialect.MySQL8Dialect
         format_sql: true
+
+# 레디스 (Refresh Token 저장소) 설정
 
   data:
     redis:
@@ -25,6 +32,9 @@ spring:
           max-idle: 5
           min-idle: 1
 
+
+# 소셜 로그인 설정
+
   security:
     oauth2:
       client:
@@ -32,22 +42,16 @@ spring:
           google:
             client-id: ${GOOGLE_CLIENT_ID}
             client-secret: ${GOOGLE_CLIENT_SECRET}
-#            redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
             scope:
               - profile
               - email
-#        provider:
-#          google:
-#            authorization-uri: https://accounts.google.com/o/oauth2/v2/auth
-#            token-uri: https://oauth2.googleapis.com/token
-#            user-info-uri: https://www.googleapis.com/oauth2/v3/userinfo
-#            user-name-attribute: sub
-#token:
-#  secret: ${TOKEN}
-#  expiration_time : 43200000
+
+# JWT Token 설정
 
 jwt:
   secret: ${JWT_SECRET_KEY}
+
+# 로그 출력 설정
 
 logging:
   level:

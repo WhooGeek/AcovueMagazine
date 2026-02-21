@@ -27,7 +27,7 @@ public class CommentResDTO {
         CommentResDTO commentResDTO = new CommentResDTO();
         commentResDTO.setCommentSeq(comment.getCommentSeq());
         commentResDTO.setCommentContent(comment.getCommentContent());
-        commentResDTO.setUserSeq(comment.getMember().getMember_seq());
+        commentResDTO.setUserSeq(comment.getMember().getMemberSeq());
         commentResDTO.setUserName(comment.getMember().getMemberName());
         commentResDTO.setChildren(new ArrayList<>());
         return commentResDTO;
