@@ -2,11 +2,11 @@ package com.AcovueMagazine.Member.Config;
 
 import com.AcovueMagazine.Member.Dao.RedisDao;
 import com.AcovueMagazine.Member.Util.JwtTokenProvider;
+import com.AcovueMagazine.Member.Service.CustomOAuth2UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
-import org.springframework.security.config.annotation.web.HttpSecurityDsl;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -25,7 +25,12 @@ import org.springframework.web.servlet.handler.HandlerMappingIntrospector;
 @EnableWebSecurity
 @RequiredArgsConstructor
 public class SecurityConfig {
+
     private final JwtTokenProvider jwtTokenProvider;
+
+    // OAuth 로그인 서비스, 핸들러 주입
+    private final CustomOAuth2UserService customOAuth2UserService;
+    private final OAuth2SuccessHandler oAuth2SuccessHandler;
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity httpSecurity, HandlerMappingIntrospector introspector, RedisDao redisDao) throws Exception {
@@ -67,6 +72,12 @@ public class SecurityConfig {
                         .anyRequest().authenticated()
         );
 
+        // OAuth 로그인 설정 추가
+        httpSecurity.oauth2Login(oauth2 -> oauth2
+                .userInfoEndpoint(userInfo -> userInfo.userService(customOAuth2UserService))
+                .successHandler(oAuth2SuccessHandler)
+        );
+
         // jwt 인증을 위해 구현한 커스텀 필터를 UsernamePasswordAuthnticationFilter 전에 실행
         httpSecurity.addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider, redisDao),
                 UsernamePasswordAuthenticationFilter.class);
@@ -74,13 +85,13 @@ public class SecurityConfig {
         return httpSecurity.build();
 
     }
-
-    @Bean
-    public PasswordEncoder passwordEncoder() {
-        // BCrypt Encoder 사용
-        // BCrypt 알고리즘만 사용해서 접두어 없이 순수한 해시값만 저장됨
-        return new BCryptPasswordEncoder();
-    }
+    // 순환 참조 오류로 --- 정리 ----
+//    @Bean
+//    public PasswordEncoder passwordEncoder() {
+//        // BCrypt Encoder 사용
+//        // BCrypt 알고리즘만 사용해서 접두어 없이 순수한 해시값만 저장됨
+//        return new BCryptPasswordEncoder();
+//    }
 
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {

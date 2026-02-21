@@ -107,7 +107,7 @@ public class MemberService {
         return jwtToken;
     }
 
-    //비밀전호 검증
+    //비밀번호 검증
     public boolean isValidPassword(String password){
         // 8자리 이상 영문 + 숫자 포함
         String pattern = "^(?=.*[A-Za-z])(?=.*\\d).{8,}$";
