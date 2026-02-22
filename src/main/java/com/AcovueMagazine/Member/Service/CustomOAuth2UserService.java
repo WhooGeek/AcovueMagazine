@@ -40,11 +40,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
         // 3. 받아온 원본 데이터 꺼내기
         Map<String, Object> attributes = oAuth2User.getAttributes();
 
-        // 4. 일단 구글 기준으로 필요한 데이터 추출
-//        String providerId = oAuth2User.getAttribute("sub");  // 구글 고유 아이디
-//        String email = oAuth2User.getAttribute("email"); // 이메일
-//        String name = oAuth2User.getAttribute("name"); // 이름
-
+        // 4. 필요한 데이터 추출
         String providerId = "";
         String email = "";
         String name = "";
