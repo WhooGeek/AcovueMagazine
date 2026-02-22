@@ -41,9 +41,26 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
         Map<String, Object> attributes = oAuth2User.getAttributes();
 
         // 4. 일단 구글 기준으로 필요한 데이터 추출
-        String providerId = oAuth2User.getAttribute("sub");  // 구글 고유 아이디
-        String email = oAuth2User.getAttribute("email"); // 이메일
-        String name = oAuth2User.getAttribute("name"); // 이
+//        String providerId = oAuth2User.getAttribute("sub");  // 구글 고유 아이디
+//        String email = oAuth2User.getAttribute("email"); // 이메일
+//        String name = oAuth2User.getAttribute("name"); // 이름
+
+        String providerId = "";
+        String email = "";
+        String name = "";
+
+        if ("google". equals(provider)) {
+            // 구글 로그인 데이터 핸들링
+            providerId = oAuth2User.getAttribute("sub");
+            email = oAuth2User.getAttribute("email");
+            name = oAuth2User.getAttribute("name");
+        } else if ("naver".equals(provider)) {
+            //네이버 로그인 데이터 핸들링
+            Map<String, Object> response = (Map<String, Object>) oAuth2User.getAttribute("response");
+            providerId = (String) response.get("id");
+            email = (String) response.get("email");
+            name = (String) response.get("name");
+        }
 
         log.info("소셜 로그인 시도 : provider{} email{}", provider, email );
 
