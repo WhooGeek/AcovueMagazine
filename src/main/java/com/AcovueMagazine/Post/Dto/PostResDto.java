@@ -2,6 +2,7 @@ package com.AcovueMagazine.Post.Dto;
 
 import com.AcovueMagazine.Post.Entity.Post;
 import com.AcovueMagazine.Member.Entity.MemberStatus;
+import com.AcovueMagazine.Post.Entity.PostImage;
 import com.AcovueMagazine.Post.Entity.PostType;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -9,6 +10,8 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Getter
 @Setter
@@ -27,10 +30,17 @@ public class PostResDto {
     private PostType post_category;
     private LocalDateTime regDate;
     private LocalDateTime modDate;
+    private List<String> imageUrls;
+    private String thumbnailUrl;
 
 
     // Entity -> DTO
     public static PostResDto fromEntity(Post magazine) {
+
+        List<String> urls = magazine.getImages().stream()
+                .map(PostImage::getImageUrl)
+                .collect(Collectors.toList());
+
         return new PostResDto(
                 magazine.getMembers().getMemberSeq(),
                 magazine.getMembers().getMemberName(),
@@ -42,7 +52,9 @@ public class PostResDto {
                 magazine.getPostContent(),
                 magazine.getPostCategory(),
                 magazine.getRegDate(),
-                magazine.getModDate()
+                magazine.getModDate(),
+                urls,
+                magazine.getThumbnailUrl()
         );
     }
 }
