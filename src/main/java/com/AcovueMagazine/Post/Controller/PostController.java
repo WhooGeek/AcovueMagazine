@@ -8,12 +8,16 @@ import com.AcovueMagazine.Post.Dto.PostResDto;
 import com.AcovueMagazine.Post.Entity.PostType;
 import com.AcovueMagazine.Post.Service.PostService;
 import com.AcovueMagazine.Member.Entity.Members;
+import com.AcovueMagazine.Post.Service.S3UploadService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/post")
@@ -21,20 +25,9 @@ import java.util.List;
 public class PostController {
 
     private final PostService postService;
+    private final S3UploadService s3UploadService;
 
-    /**
-     * Searches magazines matching the optional criteria and returns the results wrapped in an ApiResponse.
-     *
-     * <p>Searches by an optional text keyword and an optional date-time range (start/end). Date-time
-     * parameters are parsed using ISO-8601 date-time format. Results are ordered by creation date;
-     * set {@code newestFirst=false} to return oldest-first.</p>
-     *
-     * @param keyword     optional text to match against magazine fields (title/content/etc.)
-     * @param start       optional inclusive start of the date-time range (ISO-8601)
-     * @param end         optional inclusive end of the date-time range (ISO-8601)
-     * @param newestFirst if true (default) sort results newest-first; if false sort oldest-first
-     * @return an ApiResponse whose data is a List of MagazineResDTO matching the search criteria
-     */
+
     @GetMapping("/search")
     public ApiResponse<?> searchPost(
             @RequestParam(required = false) String keyword,
@@ -93,6 +86,23 @@ public class PostController {
         PostResDto magazine = postService.deleteMagazine(postId, members);
 
         return ResponseUtil.successResponse("매거진 삭제를 성공적으로 수행하였습니다", magazine).getBody();
+    }
+
+    // S3 사진 업로드
+    @PostMapping("/image")
+    public ApiResponse<?> uploadImage(@RequestParam("image")MultipartFile image) {
+        try{
+            // S3 업로드 > URL 리턴
+            String imageUrl = s3UploadService.saveFile(image);
+
+            Map<String, String> data = new HashMap<>();
+            data.put("imageUrl", imageUrl);
+
+            return ResponseUtil.successResponse("S3 이미지 업로드를 성공적으로 수행하였습니다.", data).getBody();
+        }catch (Exception e){
+            throw new RuntimeException("S3 이미지 업로드 도중 오류가 발생하였습니다.: " + e.getMessage());
+        }
+
     }
 
 

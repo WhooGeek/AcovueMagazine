@@ -4,6 +4,7 @@ import com.AcovueMagazine.Member.Util.JwtTokenProvider;
 import com.AcovueMagazine.Post.Dto.PostReqDto;
 import com.AcovueMagazine.Post.Entity.Post;
 import com.AcovueMagazine.Post.Dto.PostResDto;
+import com.AcovueMagazine.Post.Entity.PostImage;
 import com.AcovueMagazine.Post.Entity.PostType;
 import com.AcovueMagazine.Post.Repository.PostRepository;
 import com.AcovueMagazine.Member.Entity.MemberRole;
@@ -54,19 +55,28 @@ public class PostService {
         }
 
         return postPage.getContent().stream()
-                .map(post -> new PostResDto(
-                        post.getMembers().getMemberSeq(),
-                        post.getMembers().getMemberName(),
-                        post.getMembers().getMemberNickname(),
-                        post.getMembers().getMemberEmail(),
-                        post.getMembers().getMemberStatus(),
-                        post.getPostSeq(),
-                        post.getPostTitle(),
-                        post.getPostContent(),
-                        post.getPostCategory(),
-                        post.getRegDate(),
-                        post.getModDate()
-                )).collect(Collectors.toList());
+                .map(post ->  {
+
+                    List<String> urls = post.getImages().stream()
+                            .map(PostImage::getImageUrl)
+                            .collect(Collectors.toList());
+
+                    return new PostResDto(
+                            post.getMembers().getMemberSeq(),
+                            post.getMembers().getMemberName(),
+                            post.getMembers().getMemberNickname(),
+                            post.getMembers().getMemberEmail(),
+                            post.getMembers().getMemberStatus(),
+                            post.getPostSeq(),
+                            post.getPostTitle(),
+                            post.getPostContent(),
+                            post.getPostCategory(),
+                            post.getRegDate(),
+                            post.getModDate(),
+                            urls,
+                            post.getThumbnailUrl()
+                    );
+                }).collect(Collectors.toList());
     }
 
     // 매거진 상세 조회
@@ -104,7 +114,20 @@ public class PostService {
         Members members = membersRepository.findById(memberSeq)
                 .orElseThrow(()-> new EntityNotFoundException("해당 유저를 찾을 수 없습니다."));
 
-        Post post = new Post(members, postReqDTO.getPost_title(), postReqDTO.getPost_content(), postReqDTO.getPost_category());
+        System.out.println("넘어온 이미지 리스트: " + postReqDTO.getImageUrls());
+
+        Post post = new Post(members, postReqDTO.getPost_title(), postReqDTO.getPost_content(), postReqDTO.getPost_category(), postReqDTO.getThumbnail_url());
+
+        if(postReqDTO.getImageUrls() != null && !postReqDTO.getImageUrls().isEmpty()){
+            for(String url : postReqDTO.getImageUrls()){
+                PostImage postImage = PostImage.builder()
+                        .imageUrl(url)
+                        .post(post)
+                        .build();
+                post.addImage(postImage);
+            }
+
+        }
 
         post = postRepository.save(post);
 
@@ -159,6 +182,11 @@ public class PostService {
             post.updateContent(postReqDTO.getPost_content());
         }
 
+        // 썸네일 이미지 수정 있으면 저장
+        if (postReqDTO.getThumbnail_url() != null) {
+            post.updateThumbnailUrl(postReqDTO.getThumbnail_url());
+        }
+
         return PostResDto.fromEntity(post);
     }
 
@@ -204,19 +232,27 @@ public class PostService {
 
 
         return searchMagazines.stream()
-                .map(magazine -> new PostResDto(
-                        magazine.getMembers().getMemberSeq(),
-                        magazine.getMembers().getMemberName(),// 엔티티 필드에 맞춰서
-                        magazine.getMembers().getMemberNickname(),
-                        magazine.getMembers().getMemberEmail(),
-                        magazine.getMembers().getMemberStatus(),
-                        magazine.getPostSeq(),
-                        magazine.getPostTitle(),
-                        magazine.getPostContent(),
-                        magazine.getPostCategory(),
-                        magazine.getRegDate(),
-                        magazine.getModDate()
-                ))
+                .map(magazine -> {
+                    List<String> extractedUrls = magazine.getImages().stream()
+                            .map(PostImage::getImageUrl) // (또는 PostImage::getImageUrl)
+                            .collect(Collectors.toList());
+
+                    return new PostResDto(
+                            magazine.getMembers().getMemberSeq(),
+                            magazine.getMembers().getMemberName(),
+                            magazine.getMembers().getMemberNickname(),
+                            magazine.getMembers().getMemberEmail(),
+                            magazine.getMembers().getMemberStatus(),
+                            magazine.getPostSeq(),
+                            magazine.getPostTitle(),
+                            magazine.getPostContent(),
+                            magazine.getPostCategory(),
+                            magazine.getRegDate(),
+                            magazine.getModDate(),
+                            extractedUrls,
+                            magazine.getThumbnailUrl()
+                    );
+                })
                 .collect(Collectors.toList());
     }
 }

@@ -7,6 +7,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Getter
@@ -27,8 +29,11 @@ public class Post {
     private String postTitle;
 
     @Lob // Text 타입 지정
-    @Column(name = "post_content", nullable = false)
+    @Column(name = "post_content", columnDefinition = "LONGTEXT", nullable = false)
     private String postContent;
+
+    @Column(name = "thumbnail_url")
+    private String thumbnailUrl;
 
     @Column(name = "reg_date", updatable = false)
     private LocalDateTime regDate;
@@ -45,11 +50,19 @@ public class Post {
     @Column(name = "post_category")
     private PostType postCategory;
 
-    public Post(Members members, String postTitle, String postContent, PostType postCategory) {
+    @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<PostImage> images = new ArrayList<>();
+
+    public Post(Members members, String postTitle, String postContent, PostType postCategory, String thumbnailUrl) {
         this.members = members;
         this.postTitle = postTitle;
         this.postContent = postContent;
         this.postCategory = postCategory;
+        this.thumbnailUrl = thumbnailUrl;
+    }
+
+    public void addImage(PostImage postImage){
+        this.images.add(postImage);
     }
 
     public void updateTitle(String title) {
@@ -58,6 +71,10 @@ public class Post {
 
     public void updateContent(String content) {
         this.postContent = content;
+    }
+
+    public void updateThumbnailUrl(String thumbnailUrl) {
+        this.thumbnailUrl = thumbnailUrl;
     }
 
 
