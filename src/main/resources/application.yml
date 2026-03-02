@@ -87,3 +87,8 @@ cloud:
       static: ap-northeast-2
     stack:
       auto: false
+
+# OAuth 로그인 라디렉팅 URL
+app:
+  frontend:
+    redirect-url: ${FRONTEND_URL:http://localhost:5173/oauth/redirect}
