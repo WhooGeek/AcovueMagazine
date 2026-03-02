@@ -99,6 +99,7 @@ public class SecurityConfig {
 
         config.addAllowedOrigin("http://localhost:5173"); // React 개발 환경
         config.addAllowedOrigin("http://127.0.0.1:5173"); // Safari 대비
+        config.addAllowedOrigin("https://acovue-magazine-front.vercel.app/"); // vercel 환경
         config.addAllowedHeader("*");
         config.addAllowedMethod("*");
         config.setAllowCredentials(true);
