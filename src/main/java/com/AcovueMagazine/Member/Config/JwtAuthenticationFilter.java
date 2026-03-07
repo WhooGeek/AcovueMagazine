@@ -7,6 +7,7 @@ import jakarta.servlet.*;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.util.StringUtils;
@@ -14,6 +15,7 @@ import org.springframework.util.StringUtils;
 import java.io.IOException;
 
 @RequiredArgsConstructor
+@Slf4j
 public class JwtAuthenticationFilter extends GenericFilter {
 
     private final JwtTokenProvider jwtTokenProvider;
@@ -57,10 +59,22 @@ public class JwtAuthenticationFilter extends GenericFilter {
                 Authentication authentication = jwtTokenProvider.getAuthentication(accessToken);
                 SecurityContextHolder.getContext().setAuthentication(authentication);
             }else{
-                //토큰이 유효하지 않은 경우
-                HttpServletResponse httpServletResponse = (HttpServletResponse) servletResponse;
-                httpServletResponse.setStatus(HttpServletResponse.SC_UNAUTHORIZED); // 인증 정보 부
-                return;
+                // Access Token 없거나 만료되면 RefreshToken 꺼냄
+                String refreshToken = resolveRefreshToken(request);
+
+                if (refreshToken != null && jwtTokenProvider.validateRefreshToken(refreshToken)) {
+                    // RefreshToken 유효하고 Redis DB랑 일치하면 New Access Token 만들어주기
+                    Authentication authentication = jwtTokenProvider.getAuthentication(refreshToken);
+                    SecurityContextHolder.getContext().setAuthentication(authentication);
+
+                    log.info("Refresh Token 으로 인증 성공, 새 AccessToken 발급 가능 상태");
+                }else{
+                    //토큰이 유효하지 않은 경우
+                    response.setStatus(HttpServletResponse.SC_UNAUTHORIZED); // 인증 정보 부
+                    return;
+                }
+
+
             }
         }
         filterChain.doFilter(servletRequest, servletResponse);//다음 필터로 전달
@@ -73,7 +87,14 @@ public class JwtAuthenticationFilter extends GenericFilter {
             return bearerToken.substring(7); // Bearer 이후로만 넘김
         }
         return null;
+    }
 
+    private String resolveRefreshToken(HttpServletRequest request) {
+        String bearerToken = request.getHeader("Refresh-Token");
+        if(StringUtils.hasText(bearerToken) && bearerToken.startsWith("Bearer ")){
+            return bearerToken.substring(7);
+        }
+        return null;
     }
 
 
