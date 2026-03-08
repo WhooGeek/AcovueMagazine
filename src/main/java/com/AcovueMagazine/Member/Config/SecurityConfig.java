@@ -86,14 +86,6 @@ public class SecurityConfig {
         return httpSecurity.build();
 
     }
-    // 순환 참조 오류로 --- 정리 ----
-//    @Bean
-//    public PasswordEncoder passwordEncoder() {
-//        // BCrypt Encoder 사용
-//        // BCrypt 알고리즘만 사용해서 접두어 없이 순수한 해시값만 저장됨
-//        return new BCryptPasswordEncoder();
-//    }
-
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
