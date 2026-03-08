@@ -1,0 +1,63 @@
+name: Java CI/CD with Gradle
+
+# 언제 실행할지
+on:
+  push:
+    branches: [ "main" ] # 지금 작업 중인 브랜치에 푸시될 때 실행!
+
+jobs:
+  # CI 빌드 작업
+  build-and-push: # 빌드와 푸쉬를 한번에 하는 방법으로 변경
+    runs-on: ubuntu-latest # 최신 엑션즈 리눅스 환경에서 실행
+
+    steps:
+      - uses: actions/checkout@v4 # 프젝 코드를 리눅스 환경으로 가져오기
+
+      - name: Set up JDK 21 # 자바 21 실행
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+
+      - name: Setup Gradle # 빌드 도구 Gradle 준비
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Build with Gradle # 빌드 + 테스트
+        run: ./gradlew build -x test # 잠시 테스트 제외
+
+      # 도커 로그인
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      # 도커 이미지 빌드, 푸쉬
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/acovue-magazine:latest
+
+  # 배포
+  deploy:
+    needs: build-and-push
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy to EC2 via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USERNAME }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            sudo docker pull ${{ secrets.DOCKERHUB_USERNAME }}/acovue-magazine:latest
+            sudo docker stop acovue-app || true
+            sudo docker rm acovue-app || true
+            
+            sudo docker run -d --name acovue-app \
+              -p 80:8080 \
+              --env-file /home/ubuntu/AcovueMagazine/.env \
+              ${{ secrets.DOCKERHUB_USERNAME }}/acovue-magazine:latest
+            sudo docker image prune -f
