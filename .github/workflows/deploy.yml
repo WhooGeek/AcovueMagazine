@@ -39,3 +39,21 @@ jobs:
           context: .
           push: true
           tags: ${{ secrets.DOCKERHUB_USERNAME }}/acovue-magazine:latest
+
+  # 배포
+  deploy:
+    needs: build-and-push
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy to EC2 via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USERNAME }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            sudo docker pull ${{ secrets.DOCKERHUB_USERNAME }}/acovue-magazine:latest
+            sudo docker stop acovue-app || true
+            sudo docker rm acovue-app || true
+            sudo docker run -d --name acovue-app -p 80:8080 ${{ secrets.DOCKERHUB_USERNAME }}/acovue-magazine:latest
+            sudo docker image prune -f
