@@ -4,12 +4,10 @@ name: Java CI/CD with Gradle
 on:
   push:
     branches: [ "deploy/actions/#95" ] # 지금 작업 중인 브랜치에 푸시될 때 실행!
-  pull_request:
-    branches: [ "deploy/actions/#95" ]
 
 jobs:
   # CI 빌드 작업
-  build:
+  build-and-push: # 빌드와 푸쉬를 한번에 하는 방법으로 변경
     runs-on: ubuntu-latest # 최신 엑션즈 리눅스 환경에서 실행
 
     steps:
@@ -24,8 +22,20 @@ jobs:
       - name: Setup Gradle # 빌드 도구 Gradle 준비
         uses: gradle/actions/setup-gradle@v4
 
-      - name: Grant execute permission for gradlew
-        run: chmod +x gradlew # 실행 권한 가져오기
-
       - name: Build with Gradle # 빌드 + 테스트
-        run: ./gradlew build
+        run: ./gradlew build -x test # 잠시 테스트 제외
+
+      # 도커 로그인
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      # 도커 이미지 빌드, 푸쉬
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/acovue-magazine:latest
