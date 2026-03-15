@@ -23,8 +23,8 @@ spring:
 
   data:
     redis:
-      host: 127.0.0.1
-      port: 6379
+      host: ${REDIS_HOST:127.0.0.1}
+      port: ${REDIS_PORT:6379}
       password: "" # 필요 없으면 공백
       jedis:
         pool:
