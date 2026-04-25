@@ -5,6 +5,7 @@ import com.AcovueMagazine.Post.Dto.PostReqDto;
 import com.AcovueMagazine.Post.Entity.Post;
 import com.AcovueMagazine.Post.Dto.PostResDto;
 import com.AcovueMagazine.Post.Entity.PostImage;
+import com.AcovueMagazine.Post.Entity.PostStatus;
 import com.AcovueMagazine.Post.Entity.PostType;
 import com.AcovueMagazine.Post.Repository.PostRepository;
 import com.AcovueMagazine.Member.Entity.MemberRole;
@@ -48,10 +49,10 @@ public class PostService {
 
         if(postType != null){
             // 특정 카테고리 지정 된 케이스
-            postPage = postRepository.findByPostCategory(postType, pageable);
+            postPage = postRepository.findByPostCategoryAndPostStatus(postType, PostStatus.ACTIVE, pageable);
         } else {
             // 카테고리 지정 안된 케이스
-            postPage = postRepository.findAll(pageable);
+            postPage = postRepository.findByPostStatus(PostStatus.ACTIVE, pageable);
         }
 
         return postPage.getContent().stream()
@@ -82,7 +83,7 @@ public class PostService {
     // 매거진 상세 조회
     @Transactional
     public PostResDto getMagazine(Long postId) {
-        Post post = postRepository.findById(postId)
+        Post post = postRepository.findByPostSeqAndPostStatus(postId, PostStatus.ACTIVE)
                 .orElseThrow(() -> new EntityNotFoundException("해당 매거진을 찾을 수 없습니다. ID = " + postId));
 
         if (post.getMembers().getMemberStatus() == MemberStatus.INACTIVE) {
@@ -207,16 +208,18 @@ public class PostService {
             throw new AccessDeniedException("삭제 권한이 없습니다.");
         }
 
-        postRepository.delete(post);
+        // 게시물 소프트 삭제
+        post.inActivate();
 
         return PostResDto.fromEntity(post);
     }
 
-
+    // 게시물 검색 기능
     public List<PostResDto> searchPost(String keyword, LocalDateTime start, LocalDateTime end, boolean newestFirst) {
         Specification<Post> spec = Specification
                 .where(PostSpecification.titleOrContentContains(keyword))
-                .and(PostSpecification.regDateBetween(start, end));
+                .and(PostSpecification.regDateBetween(start, end))
+                .and(PostSpecification.isActive());
 
         Sort sort = newestFirst ? Sort.by("regDate").descending() : Sort.by("regDate").ascending();
 

@@ -1,6 +1,7 @@
 package com.AcovueMagazine.Post.Specification;
 
 import com.AcovueMagazine.Post.Entity.Post;
+import com.AcovueMagazine.Post.Entity.PostStatus;
 import org.springframework.data.jpa.domain.Specification;
 
 import java.time.LocalDateTime;
@@ -43,5 +44,10 @@ public class PostSpecification {
             if(start != null) return builder.greaterThanOrEqualTo(root.get("regDate"), start);
             return builder.lessThanOrEqualTo(root.get("regDate"), end);
         };
+    }
+
+    public static Specification<Post> isActive(){
+        return(root, query, builder) ->
+                builder.equal(root.get("postStatus"), PostStatus.ACTIVE);
     }
 }

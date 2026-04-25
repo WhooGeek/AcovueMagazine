@@ -32,6 +32,11 @@ public class Post {
     @Column(name = "post_content", columnDefinition = "LONGTEXT", nullable = false)
     private String postContent;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "post_status", nullable = false)
+    private PostStatus postStatus;
+
+
     @Column(name = "thumbnail_url")
     private String thumbnailUrl;
 
@@ -57,6 +62,7 @@ public class Post {
         this.members = members;
         this.postTitle = postTitle;
         this.postContent = postContent;
+        this.postStatus = PostStatus.ACTIVE;
         this.postCategory = postCategory;
         this.thumbnailUrl = thumbnailUrl;
     }
@@ -75,6 +81,11 @@ public class Post {
 
     public void updateThumbnailUrl(String thumbnailUrl) {
         this.thumbnailUrl = thumbnailUrl;
+    }
+
+    public void inActivate() {
+        this.postStatus = PostStatus.INACTIVE;
+        this.modDate = LocalDateTime.now();
     }
 
 
