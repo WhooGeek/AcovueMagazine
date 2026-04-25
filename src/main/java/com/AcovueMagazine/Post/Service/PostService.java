@@ -190,37 +190,29 @@ public class PostService {
         return PostResDto.fromEntity(post);
     }
 
-
+    // 게시글 삭제 기능
     @Transactional
-    public PostResDto deleteMagazine(Long postId, Members currentMembers) {
-        Post magazine = postRepository.findById(postId)
-                .orElseThrow(() -> new EntityNotFoundException("해당 매거진을 찾을 수 없습니다. ID = " + postId));
+    public PostResDto deleteMagazine(Long postId, Long memberSeq) {
 
+        Post post = postRepository.findById(postId)
+                .orElseThrow(() -> new EntityNotFoundException("해당 매거진을 찾을 수 없습니다. POST_ID = " + postId));
 
-        if (magazine.getMembers().getMemberSeq().equals(currentMembers.getMemberSeq()) ||
-                currentMembers.getMemberRole() == MemberRole.ADMIN) {
-            postRepository.delete(magazine);
-        } else {
-            throw new org.springframework.security.access.AccessDeniedException("삭제 권한이 없습니다.");
+        Members currentMember = membersRepository.findById(memberSeq)
+                .orElseThrow( () -> new EntityNotFoundException("해당 유저를 찾을 수 없습니다. USER_ID = " + memberSeq));
+
+        boolean isWrtter = post.getMembers().getMemberSeq().equals(currentMember.getMemberSeq());
+        boolean isAdmin = currentMember.getMemberRole() == MemberRole.ADMIN;
+
+        if(!isWrtter && !isAdmin){
+            throw new AccessDeniedException("삭제 권한이 없습니다.");
         }
 
+        postRepository.delete(post);
 
-        return PostResDto.fromEntity(magazine);
+        return PostResDto.fromEntity(post);
     }
 
-    /**
-     * Searches magazines by keyword and optional registration-date range, returning DTOs ordered by registration date.
-     *
-     * The search matches the keyword against title or content and filters by registration date between
-     * `start` and `end` (if provided). Results are sorted by `regDate` descending when `newestFirst` is true,
-     * otherwise ascending.
-     *
-     * @param keyword     text to match against magazine title or content; null or empty matches all
-     * @param start       start of the registration-date range (inclusive); may be null to omit lower bound
-     * @param end         end of the registration-date range (inclusive); may be null to omit upper bound
-     * @param newestFirst if true, sort results by `regDate` descending; if false, sort ascending
-     * @return a list of MagazineResDTOs representing matched magazines (may be empty)
-     */
+
     public List<PostResDto> searchPost(String keyword, LocalDateTime start, LocalDateTime end, boolean newestFirst) {
         Specification<Post> spec = Specification
                 .where(PostSpecification.titleOrContentContains(keyword))
