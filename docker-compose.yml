@@ -8,9 +8,19 @@ services:
     command: ["redis-server", "--appendonly", "yes"] # 데이터 지속화 옵션
     volumes:
       - redis-data:/data           # 데이터 저장용 볼륨
+
   app:
+    image: whoowhoo/acovue-magazine:latest
+    container_name: acovue-app
+    ports:
+      - "8080:8080"
+    env_file:
+      - .env
     environment:
-      - REDIS_HOST:redis-dev
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+    depends_on:
+      - redis
 
 volumes:
   redis-data:
