@@ -1,6 +1,7 @@
 package com.AcovueMagazine.Post.Repository;
 
 import com.AcovueMagazine.Post.Entity.Post;
+import com.AcovueMagazine.Post.Entity.PostStatus;
 import com.AcovueMagazine.Post.Entity.PostType;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -9,6 +10,7 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface PostRepository extends JpaRepository<Post, Long> {
 
@@ -22,5 +24,9 @@ public interface PostRepository extends JpaRepository<Post, Long> {
  */
     List<Post> findAll(Specification<Post> spec, Sort sort);
 
-    Page<Post> findByPostCategory(PostType postType, Pageable pageable);
+    Optional<Post> findByPostSeqAndPostStatus(Long postId, PostStatus postStatus);
+
+    Page<Post> findByPostCategoryAndPostStatus(PostType postType, PostStatus postStatus, Pageable pageable);
+
+    Page<Post> findByPostStatus(PostStatus postStatus, Pageable pageable);
 }
