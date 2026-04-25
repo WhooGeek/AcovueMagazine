@@ -3,14 +3,15 @@ package com.AcovueMagazine.Post.Controller;
 
 import com.AcovueMagazine.Common.Response.ApiResponse;
 import com.AcovueMagazine.Common.Response.ResponseUtil;
+import com.AcovueMagazine.Member.Util.PrincipalDetails;
 import com.AcovueMagazine.Post.Dto.PostReqDto;
 import com.AcovueMagazine.Post.Dto.PostResDto;
 import com.AcovueMagazine.Post.Entity.PostType;
 import com.AcovueMagazine.Post.Service.PostService;
-import com.AcovueMagazine.Member.Entity.Members;
 import com.AcovueMagazine.Post.Service.S3UploadService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -82,8 +83,8 @@ public class PostController {
 
     // 매거진 삭제
     @DeleteMapping("/delete/{postId}")
-    public ApiResponse<?> deleteMagazine(@PathVariable Long postId, @RequestBody Members members) {
-        PostResDto magazine = postService.deleteMagazine(postId, members);
+    public ApiResponse<?> deleteMagazine(@PathVariable Long postId, @AuthenticationPrincipal PrincipalDetails principal) {
+        PostResDto magazine = postService.deleteMagazine(postId, principal.getMemberSeq());
 
         return ResponseUtil.successResponse("매거진 삭제를 성공적으로 수행하였습니다", magazine).getBody();
     }
