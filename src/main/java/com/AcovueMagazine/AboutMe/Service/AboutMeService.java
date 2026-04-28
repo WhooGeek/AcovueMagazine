@@ -44,9 +44,6 @@ public class AboutMeService {
             throw new NullPointerException("해당 MemberSeq가 조회되지 않습니다.");
         }
 
-        if (memberSeq != 1){
-            throw new AccessDeniedException("해당 기능에 접근 가능한 계정이 아닙니다.");
-        }
 
         AboutMe aboutMe = aboutMeRepository.findByaboutMeSeq(1);
 
