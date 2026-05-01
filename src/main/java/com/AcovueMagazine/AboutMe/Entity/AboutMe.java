@@ -22,7 +22,7 @@ public class AboutMe {
     private Members members;
 
     @Lob // Text 타입 지정
-    @Column(name = "about_me_content", nullable = false)
+    @Column(name = "about_me_content", columnDefinition = "LONGTEXT", nullable = false)
     private String aboutMeContent;
 
 
