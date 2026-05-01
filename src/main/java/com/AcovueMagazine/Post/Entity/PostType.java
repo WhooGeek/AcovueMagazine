@@ -1,8 +1,7 @@
 package com.AcovueMagazine.Post.Entity;
 
 public enum PostType {
-    NEWS,
+    GUIDE,
     COMMUNITY,
-    BEHIND,
-    REVIEW
+    CONCERT_NEWS
 }
