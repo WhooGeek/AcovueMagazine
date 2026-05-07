@@ -6,6 +6,7 @@ import com.AcovueMagazine.Common.Response.ResponseUtil;
 import com.AcovueMagazine.Member.Util.PrincipalDetails;
 import com.AcovueMagazine.Post.Dto.PostReqDto;
 import com.AcovueMagazine.Post.Dto.PostResDto;
+import com.AcovueMagazine.Post.Entity.CommunityCategory;
 import com.AcovueMagazine.Post.Entity.PostType;
 import com.AcovueMagazine.Post.Service.PostService;
 import com.AcovueMagazine.Post.Service.S3UploadService;
@@ -48,43 +49,49 @@ public class PostController {
      */
     @GetMapping("/find/all")
     public ApiResponse<?> getPostList(
-            @RequestParam(required = false, defaultValue = "10") Integer limit, // 페이지당 개수 (기본값은 10)
-            @RequestParam(required = false, defaultValue = "1") Integer page, // 페이지 번호 (기본값은 1)
-            @RequestParam(required = false) String type // 게시물 타입
+            @RequestParam(required = false, defaultValue = "10") Integer limit,
+            @RequestParam(required = false, defaultValue = "1") Integer page,
+            @RequestParam(required = false) String type,
+            @RequestParam(required = false) String communityCategory
     ) {
-        // Category -> Enum
+
         PostType postType = (type != null) ? PostType.valueOf(type.toUpperCase()) : null;
 
-        List<PostResDto> posts = postService.getAllPosts(limit, page, postType);
+        CommunityCategory communityCategoryEnum=
+                (communityCategory != null)
+                        ? CommunityCategory.valueOf(communityCategory.toUpperCase())
+                        : null;
+
+        List<PostResDto> posts = postService.getAllPosts(limit, page, postType, communityCategoryEnum);
 
         return ResponseUtil.successResponse("매거진 전체 조회를 성공적으로 수행하였습니다.", posts).getBody();
     }
 
     // 매거진 상세조회
-    @GetMapping("/find/{magazineId}")
-    public ApiResponse<?> getMagazineById(@PathVariable Long magazineId) {
-        PostResDto magazine = postService.getMagazine(magazineId);
+    @GetMapping("/find/{postSeq}")
+    public ApiResponse<?> getPostBySeq(@PathVariable Long postSeq) {
+        PostResDto magazine = postService.getPost(postSeq);
         return ResponseUtil.successResponse("매거진 상세조회를 성공적으로 수행하였습니다.", magazine).getBody();
     }
 
     // 매거진 등록
     @PostMapping("/create")
-    public ApiResponse<?> createMagazine(@RequestBody PostReqDto magazineReqDTO) {
-        PostResDto magazine = postService.createMagazine(magazineReqDTO);
+    public ApiResponse<?> createPost(@RequestBody PostReqDto postReqDTO) {
+        PostResDto magazine = postService.createPost(postReqDTO);
         return ResponseUtil.successResponse("매거진 생성을 성공적으로 수행하였습니다.", magazine).getBody();
     }
 
     // 매거진 수정
-    @PutMapping("/update/{postId}")
-    public ApiResponse<?> updateMagazine(@PathVariable Long postId, @RequestBody PostReqDto PostReqDTO) {
-        PostResDto magazine = postService.updateMagazine(PostReqDTO, postId);
+    @PutMapping("/update/{postSeq}")
+    public ApiResponse<?> updatePost(@PathVariable Long postSeq, @RequestBody PostReqDto PostReqDTO) {
+        PostResDto magazine = postService.updatePost(PostReqDTO, postSeq);
         return ResponseUtil.successResponse("매거진 수정이 성공적으로 수행되었습니다.", magazine).getBody();
     }
 
     // 매거진 삭제
-    @DeleteMapping("/delete/{postId}")
-    public ApiResponse<?> deleteMagazine(@PathVariable Long postId, @AuthenticationPrincipal PrincipalDetails principal) {
-        PostResDto magazine = postService.deleteMagazine(postId, principal.getMemberSeq());
+    @DeleteMapping("/delete/{postSeq}")
+    public ApiResponse<?> deletePost(@PathVariable Long postSeq, @AuthenticationPrincipal PrincipalDetails principal) {
+        PostResDto magazine = postService.deletePost(postSeq, principal.getMemberSeq());
 
         return ResponseUtil.successResponse("매거진 삭제를 성공적으로 수행하였습니다", magazine).getBody();
     }
