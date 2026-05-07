@@ -1,5 +1,6 @@
 package com.AcovueMagazine.Post.Repository;
 
+import com.AcovueMagazine.Post.Entity.CommunityCategory;
 import com.AcovueMagazine.Post.Entity.Post;
 import com.AcovueMagazine.Post.Entity.PostStatus;
 import com.AcovueMagazine.Post.Entity.PostType;
@@ -29,4 +30,6 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     Page<Post> findByPostCategoryAndPostStatus(PostType postType, PostStatus postStatus, Pageable pageable);
 
     Page<Post> findByPostStatus(PostStatus postStatus, Pageable pageable);
+
+    Page<Post> findByPostCategoryAndCommunityCategoryAndPostStatus(PostType postType, CommunityCategory communityCategory, PostStatus postStatus, Pageable pageable);
 }

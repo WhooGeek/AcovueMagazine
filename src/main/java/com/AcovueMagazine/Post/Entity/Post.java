@@ -58,13 +58,22 @@ public class Post {
     @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<PostImage> images = new ArrayList<>();
 
-    public Post(Members members, String postTitle, String postContent, PostType postCategory, String thumbnailUrl) {
+    @Enumerated(EnumType.STRING)
+    @Column(name = "community_category")
+    private CommunityCategory communityCategory;
+
+    @Column(name="is_notice", nullable = false)
+    private Boolean notice = false;
+
+    public Post(Members members, String postTitle, String postContent, PostType postCategory, String thumbnailUrl, CommunityCategory communityCategory, Boolean notice) {
         this.members = members;
         this.postTitle = postTitle;
         this.postContent = postContent;
         this.postStatus = PostStatus.ACTIVE;
         this.postCategory = postCategory;
         this.thumbnailUrl = thumbnailUrl;
+        this.communityCategory = communityCategory;
+        this.notice = notice;
     }
 
     public void addImage(PostImage postImage){
@@ -81,6 +90,14 @@ public class Post {
 
     public void updateThumbnailUrl(String thumbnailUrl) {
         this.thumbnailUrl = thumbnailUrl;
+    }
+
+    public void updateNotice(Boolean notice) {
+        this.notice = notice;
+    }
+
+    public void updateCommunityCategory(CommunityCategory communityCategory) {
+        this.communityCategory = communityCategory;
     }
 
     public void inActivate() {

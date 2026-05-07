@@ -2,11 +2,8 @@ package com.AcovueMagazine.Post.Service;
 
 import com.AcovueMagazine.Member.Util.JwtTokenProvider;
 import com.AcovueMagazine.Post.Dto.PostReqDto;
-import com.AcovueMagazine.Post.Entity.Post;
+import com.AcovueMagazine.Post.Entity.*;
 import com.AcovueMagazine.Post.Dto.PostResDto;
-import com.AcovueMagazine.Post.Entity.PostImage;
-import com.AcovueMagazine.Post.Entity.PostStatus;
-import com.AcovueMagazine.Post.Entity.PostType;
 import com.AcovueMagazine.Post.Repository.PostRepository;
 import com.AcovueMagazine.Member.Entity.MemberRole;
 import com.AcovueMagazine.Member.Entity.Members;
@@ -38,53 +35,48 @@ public class PostService {
     private final MembersRepository membersRepository;
     private final JwtTokenProvider jwtTokenProvider;
 
-    // Post 조회 ( Limit, page, PostType )
     @Transactional
-    public List<PostResDto> getAllPosts(Integer limit, Integer page, PostType postType) {
+    public List<PostResDto> getAllPosts(Integer limit, Integer page, PostType postType, CommunityCategory communityCategory) {
 
-        Sort sort = Sort.by(Sort.Direction.DESC, "regDate");
+        Sort sort = postType == PostType.COMMUNITY
+                ? Sort.by(Sort.Order.desc("notice"), Sort.Order.desc("regDate"))
+                : Sort.by(Sort.Direction.DESC, "regDate");
+
         Pageable pageable = PageRequest.of(page - 1, limit, sort);
 
         Page<Post> postPage;
 
-        if(postType != null){
-            // 특정 카테고리 지정 된 케이스
-            postPage = postRepository.findByPostCategoryAndPostStatus(postType, PostStatus.ACTIVE, pageable);
+        if (postType == PostType.COMMUNITY && communityCategory != null) {
+            postPage = postRepository.findByPostCategoryAndCommunityCategoryAndPostStatus(
+                    PostType.COMMUNITY,
+                    communityCategory,
+                    PostStatus.ACTIVE,
+                    pageable
+            );
+        } else if (postType != null) {
+            postPage = postRepository.findByPostCategoryAndPostStatus(
+                    postType,
+                    PostStatus.ACTIVE,
+                    pageable
+            );
         } else {
-            // 카테고리 지정 안된 케이스
-            postPage = postRepository.findByPostStatus(PostStatus.ACTIVE, pageable);
+            postPage = postRepository.findByPostStatus(
+                    PostStatus.ACTIVE,
+                    pageable
+            );
         }
 
+
         return postPage.getContent().stream()
-                .map(post ->  {
-
-                    List<String> urls = post.getImages().stream()
-                            .map(PostImage::getImageUrl)
-                            .collect(Collectors.toList());
-
-                    return new PostResDto(
-                            post.getMembers().getMemberSeq(),
-                            post.getMembers().getMemberName(),
-                            post.getMembers().getMemberNickname(),
-                            post.getMembers().getMemberEmail(),
-                            post.getMembers().getMemberStatus(),
-                            post.getPostSeq(),
-                            post.getPostTitle(),
-                            post.getPostContent(),
-                            post.getPostCategory(),
-                            post.getRegDate(),
-                            post.getModDate(),
-                            urls,
-                            post.getThumbnailUrl()
-                    );
-                }).collect(Collectors.toList());
+                .map(PostResDto::fromEntity)
+                .collect(Collectors.toList());
     }
 
     // 매거진 상세 조회
     @Transactional
-    public PostResDto getMagazine(Long postId) {
-        Post post = postRepository.findByPostSeqAndPostStatus(postId, PostStatus.ACTIVE)
-                .orElseThrow(() -> new EntityNotFoundException("해당 매거진을 찾을 수 없습니다. ID = " + postId));
+    public PostResDto getPost(Long postSeq) {
+        Post post = postRepository.findByPostSeqAndPostStatus(postSeq, PostStatus.ACTIVE)
+                .orElseThrow(() -> new EntityNotFoundException("해당 매거진을 찾을 수 없습니다. ID = " + postSeq));
 
         if (post.getMembers().getMemberStatus() == MemberStatus.INACTIVE) {
             throw new IllegalStateException("비활성화된 유저입니다.");
@@ -95,7 +87,7 @@ public class PostService {
 
     // 매거진 생성 기능
     @Transactional
-    public PostResDto createMagazine(PostReqDto postReqDTO) {
+    public PostResDto createPost(PostReqDto postReqDTO) {
 
         String accessToken = jwtTokenProvider.resolveToken();
 
@@ -115,9 +107,21 @@ public class PostService {
         Members members = membersRepository.findById(memberSeq)
                 .orElseThrow(()-> new EntityNotFoundException("해당 유저를 찾을 수 없습니다."));
 
-        System.out.println("넘어온 이미지 리스트: " + postReqDTO.getImageUrls());
+        boolean requestedNotice = Boolean.TRUE.equals(postReqDTO.getNotice());
 
-        Post post = new Post(members, postReqDTO.getPost_title(), postReqDTO.getPost_content(), postReqDTO.getPost_category(), postReqDTO.getThumbnail_url());
+        if(requestedNotice && members.getMemberRole() != MemberRole.ADMIN){
+            throw new AccessDeniedException("공지 작성 권한이 없습니다.");
+        }
+
+        Post post = new Post(
+                members,
+                postReqDTO.getPost_title(),
+                postReqDTO.getPost_content(),
+                postReqDTO.getPost_category(),
+                postReqDTO.getThumbnail_url(),
+                postReqDTO.getCommunityCategory(),
+                requestedNotice
+        );
 
         if(postReqDTO.getImageUrls() != null && !postReqDTO.getImageUrls().isEmpty()){
             for(String url : postReqDTO.getImageUrls()){
@@ -137,7 +141,7 @@ public class PostService {
 
     // 매거진 수정 기능
     @Transactional
-    public PostResDto updateMagazine(PostReqDto postReqDTO, Long postId) {
+    public PostResDto updatePost(PostReqDto postReqDTO, Long postSeq) {
 
         String accessToken = jwtTokenProvider.resolveToken();
 
@@ -154,23 +158,21 @@ public class PostService {
             throw new NullPointerException("해당 MemberSeq가 조회되지 않습니다.");
         }
 
-        Post post = postRepository.findById(postId)
-                .orElseThrow(() -> new EntityNotFoundException("해당 매거진을 찾을 수 없습니다. ID = " + postId));
+        Post post = postRepository.findById(postSeq)
+                .orElseThrow(() -> new EntityNotFoundException("해당 매거진을 찾을 수 없습니다. ID = " + postSeq));
 
         Members members = membersRepository.findById(memberSeq)
                 .orElseThrow(()-> new EntityNotFoundException("해당 유저를 찾을 수 없습니다."));
 
-        // 권한 체크
-        // 1. 작성자인지 확인 (게시글 작성자 ID == 현재 로그인한 유저 ID)
         boolean isWriter = post.getMembers().getMemberSeq().equals(members.getMemberSeq());
-
-        // 2. 관리자인지 확인 (현재 로그인한 유저의 Role이 ADMIN인지)
-        // 주의: post.getMembers()가 아니라 현재 로그인한 'members'의 권한을 확인해야 합니다.
         boolean isAdmin = (members.getMemberRole() == MemberRole.ADMIN);
 
-        // 3. 검증: 작성자도 아니고(AND) 관리자도 아니면 -> 권한 없음 예외 발생
         if (!isWriter && !isAdmin) {
             throw new AccessDeniedException("수정 권한이 없습니다.");
+        }
+
+        if (postReqDTO.getNotice() != null && !isAdmin){
+            throw new AccessDeniedException("공지 수정 권한이 없습니다.");
         }
 
         // 제목 수정이 있으면 저장
@@ -188,15 +190,23 @@ public class PostService {
             post.updateThumbnailUrl(postReqDTO.getThumbnail_url());
         }
 
+        if (postReqDTO.getCommunityCategory() != null) {
+            post.updateCommunityCategory(postReqDTO.getCommunityCategory());
+        }
+
+        if (postReqDTO.getNotice() != null) {
+            post.updateNotice(postReqDTO.getNotice());
+        }
+
         return PostResDto.fromEntity(post);
     }
 
     // 게시글 삭제 기능
     @Transactional
-    public PostResDto deleteMagazine(Long postId, Long memberSeq) {
+    public PostResDto deletePost(Long postSeq, Long memberSeq) {
 
-        Post post = postRepository.findById(postId)
-                .orElseThrow(() -> new EntityNotFoundException("해당 매거진을 찾을 수 없습니다. POST_ID = " + postId));
+        Post post = postRepository.findById(postSeq)
+                .orElseThrow(() -> new EntityNotFoundException("해당 매거진을 찾을 수 없습니다. POST_ID = " + postSeq));
 
         Members currentMember = membersRepository.findById(memberSeq)
                 .orElseThrow( () -> new EntityNotFoundException("해당 유저를 찾을 수 없습니다. USER_ID = " + memberSeq));
@@ -227,27 +237,7 @@ public class PostService {
 
 
         return searchMagazines.stream()
-                .map(magazine -> {
-                    List<String> extractedUrls = magazine.getImages().stream()
-                            .map(PostImage::getImageUrl) // (또는 PostImage::getImageUrl)
-                            .collect(Collectors.toList());
-
-                    return new PostResDto(
-                            magazine.getMembers().getMemberSeq(),
-                            magazine.getMembers().getMemberName(),
-                            magazine.getMembers().getMemberNickname(),
-                            magazine.getMembers().getMemberEmail(),
-                            magazine.getMembers().getMemberStatus(),
-                            magazine.getPostSeq(),
-                            magazine.getPostTitle(),
-                            magazine.getPostContent(),
-                            magazine.getPostCategory(),
-                            magazine.getRegDate(),
-                            magazine.getModDate(),
-                            extractedUrls,
-                            magazine.getThumbnailUrl()
-                    );
-                })
+                .map(PostResDto::fromEntity)
                 .collect(Collectors.toList());
     }
 }

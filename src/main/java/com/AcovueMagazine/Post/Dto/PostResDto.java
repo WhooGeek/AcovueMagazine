@@ -1,5 +1,6 @@
 package com.AcovueMagazine.Post.Dto;
 
+import com.AcovueMagazine.Post.Entity.CommunityCategory;
 import com.AcovueMagazine.Post.Entity.Post;
 import com.AcovueMagazine.Member.Entity.MemberStatus;
 import com.AcovueMagazine.Post.Entity.PostImage;
@@ -32,6 +33,8 @@ public class PostResDto {
     private LocalDateTime modDate;
     private List<String> imageUrls;
     private String thumbnailUrl;
+    private CommunityCategory communityCategory;
+    private Boolean notice;
 
 
     // Entity -> DTO
@@ -54,7 +57,9 @@ public class PostResDto {
                 magazine.getRegDate(),
                 magazine.getModDate(),
                 urls,
-                magazine.getThumbnailUrl()
+                magazine.getThumbnailUrl(),
+                magazine.getCommunityCategory(),
+                magazine.getNotice()
         );
     }
 }

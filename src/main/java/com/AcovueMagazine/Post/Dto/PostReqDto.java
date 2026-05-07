@@ -1,5 +1,6 @@
 package com.AcovueMagazine.Post.Dto;
 
+import com.AcovueMagazine.Post.Entity.CommunityCategory;
 import com.AcovueMagazine.Post.Entity.PostType;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -19,4 +20,6 @@ public class PostReqDto {
     private PostType post_category;
     private List<String> imageUrls;
     private String thumbnail_url;
+    private CommunityCategory communityCategory;
+    private Boolean notice;
 }
