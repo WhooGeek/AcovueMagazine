@@ -35,10 +35,20 @@ public class PostResDto {
     private String thumbnailUrl;
     private CommunityCategory communityCategory;
     private Boolean notice;
+    private Long commentCount;
+    private Long postLikeCount;
 
 
     // Entity -> DTO
     public static PostResDto fromEntity(Post magazine) {
+        return fromEntity(magazine, 0L, 0L);
+    }
+
+    public static PostResDto fromEntity(Post magazine, Long commentCount) {
+        return fromEntity(magazine, commentCount, 0L);
+    }
+
+    public static PostResDto fromEntity(Post magazine, Long commentCount, Long postLikeCount) {
 
         List<String> urls = magazine.getImages().stream()
                 .map(PostImage::getImageUrl)
@@ -59,7 +69,9 @@ public class PostResDto {
                 urls,
                 magazine.getThumbnailUrl(),
                 magazine.getCommunityCategory(),
-                magazine.getNotice()
+                magazine.getNotice(),
+                commentCount,
+                postLikeCount
         );
     }
 }
