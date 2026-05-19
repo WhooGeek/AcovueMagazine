@@ -1,5 +1,8 @@
 package com.AcovueMagazine.Post.Service;
 
+import com.AcovueMagazine.Comment.Entity.CommentStatus;
+import com.AcovueMagazine.Comment.Respository.CommentRepository;
+import com.AcovueMagazine.Like.Respository.PostLikeRepository;
 import com.AcovueMagazine.Member.Util.JwtTokenProvider;
 import com.AcovueMagazine.Post.Dto.PostReqDto;
 import com.AcovueMagazine.Post.Entity.*;
@@ -24,6 +27,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -34,6 +38,8 @@ public class PostService {
     private final PostRepository postRepository;
     private final MembersRepository membersRepository;
     private final JwtTokenProvider jwtTokenProvider;
+    private final CommentRepository commentRepository;
+    private final PostLikeRepository postLikeRepository;
 
     @Transactional
     public List<PostResDto> getAllPosts(Integer limit, Integer page, PostType postType, CommunityCategory communityCategory) {
@@ -66,10 +72,50 @@ public class PostService {
             );
         }
 
+        List<Post> posts = postPage.getContent();
 
-        return postPage.getContent().stream()
-                .map(PostResDto::fromEntity)
-                .collect(Collectors.toList());
+        Map<Long, Long> commentCountMap = getCommentCountMap(posts);
+        Map<Long, Long> postLikeCountMap = getPostLikeCountMap(posts);
+
+        return posts.stream()
+                .map(post -> PostResDto.fromEntity(
+                        post,
+                        commentCountMap.getOrDefault(post.getPostSeq(), 0L),
+                        postLikeCountMap.getOrDefault(post.getPostSeq(), 0L)
+                ))
+                .toList();
+    }
+
+    private Map<Long, Long> getCommentCountMap(List<Post> posts) {
+        List<Long> postSeqs = posts.stream()
+                .map(Post::getPostSeq)
+                .toList();
+
+        if (postSeqs.isEmpty()) {
+            return Map.of();
+        }
+
+        return commentRepository.countCommentsByPostSeqs(postSeqs, CommentStatus.ACTIVE).stream()
+                .collect(Collectors.toMap(
+                        row -> (Long) row[0],
+                        row -> (Long) row[1]
+                ));
+    }
+
+    private Map<Long, Long> getPostLikeCountMap(List<Post> posts) {
+        List<Long> postSeqs = posts.stream()
+                .map(Post::getPostSeq)
+                .toList();
+
+        if (postSeqs.isEmpty()) {
+            return Map.of();
+        }
+
+        return postLikeRepository.countPostLikesByPostSeqs(postSeqs).stream()
+                .collect(Collectors.toMap(
+                        row -> (Long) row[0],
+                        row -> (Long) row[1]
+                ));
     }
 
     // 매거진 상세 조회
