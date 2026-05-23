@@ -23,4 +23,11 @@ public class MemberLoginDto {
         private Long refreshTokenExpirationTime;
     }
 
+    @Getter
+    @Builder
+    public static class TokenReissueResDTO{
+        private String grantType;
+        private String accessToken;
+    }
+
 }

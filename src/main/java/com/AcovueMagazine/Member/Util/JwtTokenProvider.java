@@ -2,6 +2,7 @@ package com.AcovueMagazine.Member.Util;
 
 import com.AcovueMagazine.Member.Dao.RedisDao;
 import com.AcovueMagazine.Member.Dto.MemberLoginDto;
+import com.AcovueMagazine.Member.Entity.Members;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
 import jakarta.servlet.http.HttpServletRequest;
@@ -12,13 +13,11 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.User;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
 import javax.crypto.SecretKey;
-import java.security.Key;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
@@ -67,6 +66,7 @@ public class JwtTokenProvider {
 
         Object principal = authentication.getPrincipal();
         if (principal instanceof MemberDetail memberDetail) {
+            username = memberDetail.getMember().getMemberEmail();
             memberSeq = memberDetail.getMember().getMemberSeq();
         } else if(principal instanceof User user){
             throw new IllegalArgumentException("MemberSeq를 가져올 수 없습니다.");
@@ -74,7 +74,7 @@ public class JwtTokenProvider {
             throw new IllegalArgumentException("알 수 없는 principal 타입");
         }
 
-        //AccessToken생성
+        //AccessToken 생성
         Date accessTokenExpire = new Date(now + ACCESS_TOKEN_EXPIRE_TIME);
         String accessToken = generateAccessToken(username, authorities, memberSeq, accessTokenExpire);
 
@@ -250,6 +250,19 @@ public class JwtTokenProvider {
         return null;
     }
 
+    public String getUsernameFromRefreshToken(String refreshToken){
+        return getUserNameFromToken(refreshToken);
+    }
 
+    public String reissueAccessToken(Members member){
+        String authorities = member.getMemberRole().name();
+        Date accessTokenExpire = new Date(System.currentTimeMillis() + ACCESS_TOKEN_EXPIRE_TIME);
 
+        return generateAccessToken(
+                member.getMemberEmail(),
+                authorities,
+                member.getMemberSeq(),
+                accessTokenExpire
+        );
+    }
 }

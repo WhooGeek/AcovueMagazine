@@ -138,7 +138,14 @@ public class MemberController {
         return ResponseUtil.successResponse("성공적으로 회원 정보 변경이 완료되었습니다.", members).getBody();
     }
 
+    // access token 만료 후 refreshToken 발급 -> accessToken 재발급으로 이어지는 기능
+    @PostMapping("/reissue")
+    public ApiResponse<?> reissue(@RequestHeader("Refresh-Token")
+                                     String refreshTokenHeader){
+        MemberLoginDto.TokenReissueResDTO response = memberService.reissueAccessToken(refreshTokenHeader);
 
+        return ResponseUtil.successResponse("성공적으로 accessToken이 재 발급 되었습니다.", response).getBody();
+    }
 
 
 
