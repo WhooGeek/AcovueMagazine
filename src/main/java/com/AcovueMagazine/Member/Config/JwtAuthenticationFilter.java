@@ -35,7 +35,11 @@ public class JwtAuthenticationFilter extends GenericFilter {
         String path = request.getRequestURI();
 
         // 로그인/회원가입 경로는 JWT 검증 없이 통과
-        if (path.startsWith("/api/member/sign-up") || path.startsWith("/api/member/login")) {
+        if (path.startsWith("/api/member/sign-up") ||
+            path.startsWith("/api/member/sing-up") ||
+            path.startsWith("/api/member/login")   ||
+            path.startsWith("/api/member/reissue")
+        ) {
             filterChain.doFilter(servletRequest, servletResponse);
             return;
         }

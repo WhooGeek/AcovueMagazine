@@ -212,4 +212,29 @@ public class MemberService {
 
         return MemberDataDto.from(members);
     }
+
+    //accessToken 재발급
+    public MemberLoginDto.TokenReissueResDTO reissueAccessToken(String refreshTokenHeader) {
+
+        if(refreshTokenHeader == null || !refreshTokenHeader.startsWith("Bearer ")){
+            throw new IllegalArgumentException("RefreshToken 형식이 올바르지 않습니다.");
+        }
+
+        String refreshToken = refreshTokenHeader.substring(7);
+
+        if(!jwtTokenProvider.validateRefreshToken(refreshToken)){
+            throw new IllegalArgumentException("유효하지 않은 RefreshToken 입니다.");
+        }
+
+        String email = jwtTokenProvider.getUsernameFromRefreshToken(refreshToken);
+
+        Members member = membersRepository.findByMemberEmail(email).orElseThrow(() -> new EntityNotFoundException("회원 정보를 찾을 수 없습니다."));
+
+        String newAccessToken = jwtTokenProvider.reissueAccessToken(member);
+
+        return MemberLoginDto.TokenReissueResDTO.builder()
+                .grantType("Bearer")
+                .accessToken(newAccessToken)
+                .build();
+    }
 }

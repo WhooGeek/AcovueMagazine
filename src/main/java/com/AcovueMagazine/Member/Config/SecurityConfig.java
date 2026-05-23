@@ -58,7 +58,9 @@ public class SecurityConfig {
                         // 사용자 삭제 권한은 관리자만
                         .requestMatchers(HttpMethod.DELETE, "/user").hasRole("ADMIN")
                         .requestMatchers("/members/role").hasRole("USER")
-                        .requestMatchers(HttpMethod.POST, "/api/member/*").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/member/login").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/member/sing-up").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/member/reissue").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/member/me/update").hasAnyAuthority("USER", "ADMIN")
                         .requestMatchers(HttpMethod.PUT, "/api/post/**").hasAnyAuthority("USER", "ADMIN")
                         .requestMatchers(HttpMethod.DELETE, "/api/post/**").hasAnyAuthority("USER", "ADMIN")
