@@ -5,7 +5,6 @@ import com.AcovueMagazine.Comment.Entity.CommentStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
-
 import java.util.List;
 
 
@@ -19,6 +18,7 @@ public interface CommentRepository extends JpaRepository<Comment,Long> {
     @Query("SELECT c FROM Comment c WHERE c.parent.commentSeq = :parentSeq AND c.commentStatus = 'ACTIVE' ")
     List<Comment> findByParent(@Param("parentSeq") Long parentSeq);
 
+    // 코멘트 개수 조회
     Long countByPost_PostSeqAndCommentStatus(Long postSeq, CommentStatus commentStatus);
 
     @Query("""
@@ -32,4 +32,5 @@ public interface CommentRepository extends JpaRepository<Comment,Long> {
             @Param("postSeqs") List<Long> postSeqs,
             @Param("commentStatus") CommentStatus commentStatus
     );
+
 }

@@ -1,7 +1,9 @@
 package com.AcovueMagazine.Comment.Service;
+import com.AcovueMagazine.Comment.Dto.CommentCountResDTO;
 import com.AcovueMagazine.Comment.Dto.CommentReqDTO;
 import com.AcovueMagazine.Comment.Dto.CommentResDTO;
 import com.AcovueMagazine.Comment.Entity.Comment;
+import com.AcovueMagazine.Comment.Entity.CommentStatus;
 import com.AcovueMagazine.Comment.Respository.CommentRepository;
 import com.AcovueMagazine.Post.Entity.Post;
 import com.AcovueMagazine.Post.Repository.PostRepository;
@@ -24,7 +26,7 @@ import java.util.List;
 public class CommentService {
 
     private final CommentRepository commentRepository;
-    private final PostRepository magazineRepository;
+    private final PostRepository postRepository;
     private final MembersRepository membersRepository;
 
     // 댓글 + 대댓글 조회 기능
@@ -32,7 +34,7 @@ public class CommentService {
     public List<CommentResDTO> getComment(Long postId) {
 
         // 매거진 유효성 검사
-        Post magazine = magazineRepository.findById(postId)
+        Post magazine = postRepository.findById(postId)
                 .orElseThrow(() -> new EntityNotFoundException("해당 매거진을 찾을 수 없습니다. ID = " + postId));
 
         // 최초 댓글 조회
@@ -66,7 +68,7 @@ public class CommentService {
                 .orElseThrow(()-> new EntityNotFoundException("해당 유저를 찾을 수 없습니다."));
 
         // 매거진 유효성 검사
-        Post magazine = magazineRepository.findById(postId)
+        Post magazine = postRepository.findById(postId)
                 .orElseThrow(() -> new EntityNotFoundException("해당 매거진을 찾을 수 없습니다. ID = " + postId));
 
         Comment parentComment = null;
@@ -92,7 +94,7 @@ public class CommentService {
                 .orElseThrow(() -> new EntityNotFoundException("해당 유저를 찾을 수 없습니다. ID = " + commentReqDTO.getUserSeq()) );
 
         // 매거진 조회
-        Post magazine = magazineRepository.findById(postId)
+        Post magazine = postRepository.findById(postId)
                 .orElseThrow(() -> new EntityNotFoundException("해당 매거진을 찾을 수 없습니다. ID = " + postId));
 
         // 댓글 조회
@@ -122,7 +124,7 @@ public class CommentService {
                 .orElseThrow(() -> new EntityNotFoundException("해당 유저를 찾을 수 없습니다. ID = " + memberSeq) );
 
         // 매거진 조회
-        Post magazine = magazineRepository.findById(postId)
+        Post magazine = postRepository.findById(postId)
                 .orElseThrow(() -> new EntityNotFoundException("해당 매거진을 찾을 수 없습니다. ID = " + postId));
 
         // 댓글 조회
@@ -138,5 +140,18 @@ public class CommentService {
 
         return CommentResDTO.fromEntity(comment);
 
+    }
+
+    // 상세 페이지 Comment Count 조회
+    @Transactional
+    public CommentCountResDTO getCommentCount(Long postId) {
+
+        // 포스트 조회
+        postRepository.findById(postId)
+                .orElseThrow(() -> new EntityNotFoundException("해당 포스트를 찾을 수 없습니다. ID = " + postId));
+
+        Long commentCount = commentRepository.countByPost_PostSeqAndCommentStatus(postId, CommentStatus.ACTIVE);
+
+        return CommentCountResDTO.from(postId, commentCount);
     }
 }

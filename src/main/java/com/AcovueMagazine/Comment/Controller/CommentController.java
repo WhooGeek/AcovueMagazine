@@ -1,5 +1,6 @@
 package com.AcovueMagazine.Comment.Controller;
 
+import com.AcovueMagazine.Comment.Dto.CommentCountResDTO;
 import com.AcovueMagazine.Comment.Dto.CommentReqDTO;
 import com.AcovueMagazine.Comment.Dto.CommentResDTO;
 import com.AcovueMagazine.Comment.Service.CommentService;
@@ -26,6 +27,15 @@ public class CommentController {
         List<CommentResDTO> comments = commentService.getComment(postId);
 
         return ResponseUtil.successResponse("댓글을 성공적으로 조회하였습니다.", comments).getBody();
+    }
+
+    // 댓글 개수 조회
+    @GetMapping("/count/{postId}")
+    public ApiResponse<?> getCommentCount(@PathVariable Long postId){
+
+        CommentCountResDTO commentCount = commentService.getCommentCount(postId);
+
+        return ResponseUtil.successResponse("댓글 개수를 성공적으로 조회하였습니다.", commentCount).getBody();
     }
 
     // 댓글, 대댓글 등록
