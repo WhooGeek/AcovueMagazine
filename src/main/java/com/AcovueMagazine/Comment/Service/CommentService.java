@@ -5,16 +5,17 @@ import com.AcovueMagazine.Comment.Dto.CommentResDTO;
 import com.AcovueMagazine.Comment.Entity.Comment;
 import com.AcovueMagazine.Comment.Entity.CommentStatus;
 import com.AcovueMagazine.Comment.Respository.CommentRepository;
+import com.AcovueMagazine.Common.Response.ErrorCode;
+import com.AcovueMagazine.Common.Response.RestApiException;
 import com.AcovueMagazine.Post.Entity.Post;
 import com.AcovueMagazine.Post.Repository.PostRepository;
 import com.AcovueMagazine.Member.Entity.MemberRole;
 import com.AcovueMagazine.Member.Entity.Members;
 import com.AcovueMagazine.Member.Repository.MembersRepository;
-import jakarta.persistence.EntityNotFoundException;
+import com.AcovueMagazine.Member.Util.JwtTokenProvider;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -28,6 +29,7 @@ public class CommentService {
     private final CommentRepository commentRepository;
     private final PostRepository postRepository;
     private final MembersRepository membersRepository;
+    private final JwtTokenProvider jwtTokenProvider;
 
     // 댓글 + 대댓글 조회 기능
     @Transactional
@@ -35,7 +37,7 @@ public class CommentService {
 
         // 매거진 유효성 검사
         Post magazine = postRepository.findById(postId)
-                .orElseThrow(() -> new EntityNotFoundException("해당 매거진을 찾을 수 없습니다. ID = " + postId));
+                .orElseThrow(() -> new RestApiException(ErrorCode.POST_NOT_FOUND));
 
         // 최초 댓글 조회
         List<Comment> topComments = commentRepository.findTopCommentsByPost(postId);
@@ -62,20 +64,19 @@ public class CommentService {
 
     // 댓글 + 대댓글 등록
     @Transactional
-    public CommentResDTO createComment(Long postId, CommentReqDTO commentReqDTO, Long memberSeq) {
+    public CommentResDTO createComment(Long postId, CommentReqDTO commentReqDTO) {
 
-        Members members = membersRepository.findById(memberSeq)
-                .orElseThrow(()-> new EntityNotFoundException("해당 유저를 찾을 수 없습니다."));
+        Members members = getCurrentMember();
 
         // 매거진 유효성 검사
         Post magazine = postRepository.findById(postId)
-                .orElseThrow(() -> new EntityNotFoundException("해당 매거진을 찾을 수 없습니다. ID = " + postId));
+                .orElseThrow(() -> new RestApiException(ErrorCode.POST_NOT_FOUND));
 
         Comment parentComment = null;
 
         if(commentReqDTO.getParentSeq() != null){
             parentComment = commentRepository.findById(commentReqDTO.getParentSeq())
-                    .orElseThrow(() -> new EntityNotFoundException("부모 댓글을 찾을 수 없습니다." + commentReqDTO.getParentSeq()));
+                    .orElseThrow(() -> new RestApiException(ErrorCode.COMMENT_NOT_FOUND));
         }
 
         Comment comment = new Comment(members, magazine, commentReqDTO.getCommentContent(), parentComment);
@@ -87,24 +88,23 @@ public class CommentService {
 
     // 댓글 + 대댓글 수정
     @Transactional
-    public CommentResDTO updateComment(Long postId, Long commentSeq, CommentReqDTO commentReqDTO, Long memberSeq) {
+    public CommentResDTO updateComment(Long postId, Long commentSeq, CommentReqDTO commentReqDTO) {
 
-        // 유저 조회
-        Members members = membersRepository.findById(memberSeq)
-                .orElseThrow(() -> new EntityNotFoundException("해당 유저를 찾을 수 없습니다. ID = " + commentReqDTO.getUserSeq()) );
+        Members members = getCurrentMember();
 
         // 매거진 조회
         Post magazine = postRepository.findById(postId)
-                .orElseThrow(() -> new EntityNotFoundException("해당 매거진을 찾을 수 없습니다. ID = " + postId));
+                .orElseThrow(() -> new RestApiException(ErrorCode.POST_NOT_FOUND));
 
         // 댓글 조회
         Comment comment = commentRepository.findById(commentSeq)
-                .orElseThrow(() -> new EntityNotFoundException("해당 댓글을 찾을 수 없습니다." + commentReqDTO.getCommentSeq()));
+                .orElseThrow(() -> new RestApiException(ErrorCode.COMMENT_NOT_FOUND));
 
-        // 권한 체크
-        if (!magazine.getMembers().getMemberSeq().equals(members.getMemberSeq()) &&
-                members.getMemberRole() != MemberRole.ADMIN) {
-            throw new AccessDeniedException("수정 권한이 없습니다.");
+        boolean isWriter = comment.getMember().getMemberSeq().equals(members.getMemberSeq());
+        boolean isAdmin = members.getMemberRole() == MemberRole.ADMIN;
+
+        if (!isWriter && !isAdmin) {
+            throw new RestApiException(ErrorCode.FORBIDDEN);
         }
 
         // 내용 수정이 있으면 저장
@@ -117,26 +117,26 @@ public class CommentService {
 
     // 댓글 + 대댓글 삭제
     @Transactional
-    public CommentResDTO deleteComment(Long postId, Long commentSeq, Long memberSeq) {
+    public CommentResDTO deleteComment(Long postId, Long commentSeq) {
 
-        // 유저 조회
-        Members members = membersRepository.findById(memberSeq)
-                .orElseThrow(() -> new EntityNotFoundException("해당 유저를 찾을 수 없습니다. ID = " + memberSeq) );
+        Members members = getCurrentMember();
 
         // 매거진 조회
         Post magazine = postRepository.findById(postId)
-                .orElseThrow(() -> new EntityNotFoundException("해당 매거진을 찾을 수 없습니다. ID = " + postId));
+                .orElseThrow(() -> new RestApiException(ErrorCode.POST_NOT_FOUND));
 
         // 댓글 조회
         Comment comment = commentRepository.findById(commentSeq)
-                .orElseThrow(() -> new EntityNotFoundException("해당 댓글을 찾을 수 없습니다." + commentSeq));
+                .orElseThrow(() -> new RestApiException(ErrorCode.COMMENT_NOT_FOUND));
 
-        if(comment.getMember().getMemberRole() != MemberRole.ADMIN ||
-            members.getMemberSeq() == comment.getMember().getMemberSeq()) {
-            commentRepository.delete(comment);
-        } else{
-            throw new AccessDeniedException("삭제 권한이 없습니다.");
+        boolean isWriter = comment.getMember().getMemberSeq().equals(members.getMemberSeq());
+        boolean isAdmin = members.getMemberRole() == MemberRole.ADMIN;
+
+        if (!isWriter && !isAdmin) {
+            throw new RestApiException(ErrorCode.FORBIDDEN);
         }
+
+        commentRepository.delete(comment);
 
         return CommentResDTO.fromEntity(comment);
 
@@ -148,10 +148,27 @@ public class CommentService {
 
         // 포스트 조회
         postRepository.findById(postId)
-                .orElseThrow(() -> new EntityNotFoundException("해당 포스트를 찾을 수 없습니다. ID = " + postId));
+                .orElseThrow(() -> new RestApiException(ErrorCode.POST_NOT_FOUND));
 
         Long commentCount = commentRepository.countByPost_PostSeqAndCommentStatus(postId, CommentStatus.ACTIVE);
 
         return CommentCountResDTO.from(postId, commentCount);
+    }
+
+    private Members getCurrentMember() {
+        String accessToken = jwtTokenProvider.resolveToken();
+
+        if (accessToken == null || accessToken.isEmpty()) {
+            throw new RestApiException(ErrorCode.ACCESS_TOKEN_NULL);
+        }
+
+        Long memberSeq = jwtTokenProvider.getMemberSeqFromToken(accessToken);
+
+        if (memberSeq == null) {
+            throw new RestApiException(ErrorCode.INVALID_TOKEN);
+        }
+
+        return membersRepository.findById(memberSeq)
+                .orElseThrow(() -> new RestApiException(ErrorCode.USER_NOT_FOUND));
     }
 }

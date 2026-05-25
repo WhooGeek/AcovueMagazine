@@ -2,6 +2,8 @@ package com.AcovueMagazine.Post.Service;
 
 import com.AcovueMagazine.Comment.Entity.CommentStatus;
 import com.AcovueMagazine.Comment.Respository.CommentRepository;
+import com.AcovueMagazine.Common.Response.ErrorCode;
+import com.AcovueMagazine.Common.Response.RestApiException;
 import com.AcovueMagazine.Like.Respository.PostLikeRepository;
 import com.AcovueMagazine.Member.Util.JwtTokenProvider;
 import com.AcovueMagazine.Post.Dto.PostReqDto;
@@ -13,7 +15,6 @@ import com.AcovueMagazine.Member.Entity.Members;
 import com.AcovueMagazine.Member.Entity.MemberStatus;
 import com.AcovueMagazine.Member.Repository.MembersRepository;
 import com.AcovueMagazine.Post.Specification.PostSpecification;
-import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -22,7 +23,6 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
-import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -122,10 +122,10 @@ public class PostService {
     @Transactional
     public PostResDto getPost(Long postSeq) {
         Post post = postRepository.findByPostSeqAndPostStatus(postSeq, PostStatus.ACTIVE)
-                .orElseThrow(() -> new EntityNotFoundException("해당 매거진을 찾을 수 없습니다. ID = " + postSeq));
+                .orElseThrow(() -> new RestApiException(ErrorCode.POST_NOT_FOUND));
 
         if (post.getMembers().getMemberStatus() == MemberStatus.INACTIVE) {
-            throw new IllegalStateException("비활성화된 유저입니다.");
+            throw new RestApiException(ErrorCode.INACTIVE_USER);
         }
 
         return PostResDto.fromEntity(post);
@@ -135,28 +135,12 @@ public class PostService {
     @Transactional
     public PostResDto createPost(PostReqDto postReqDTO) {
 
-        String accessToken = jwtTokenProvider.resolveToken();
-
-        if (accessToken == null || accessToken.isEmpty()) {
-
-            // 추후 Custom Reaction으로 리펙토링 예정
-            throw new NullPointerException("토큰이 조회되지 않습니다.");
-        }
-
-        // memberSeq 꺼내기
-        Long memberSeq = jwtTokenProvider.getMemberSeqFromToken(accessToken);
-
-        if (memberSeq == null) {
-            throw new NullPointerException("해당 MemberSeq가 조회되지 않습니다.");
-        }
-
-        Members members = membersRepository.findById(memberSeq)
-                .orElseThrow(()-> new EntityNotFoundException("해당 유저를 찾을 수 없습니다."));
+        Members members = getCurrentMember();
 
         boolean requestedNotice = Boolean.TRUE.equals(postReqDTO.getNotice());
 
         if(requestedNotice && members.getMemberRole() != MemberRole.ADMIN){
-            throw new AccessDeniedException("공지 작성 권한이 없습니다.");
+            throw new RestApiException(ErrorCode.FORBIDDEN);
         }
 
         Post post = new Post(
@@ -189,36 +173,20 @@ public class PostService {
     @Transactional
     public PostResDto updatePost(PostReqDto postReqDTO, Long postSeq) {
 
-        String accessToken = jwtTokenProvider.resolveToken();
-
-        if (accessToken == null || accessToken.isEmpty()) {
-
-            // 추후 Custom Reaction으로 리펙토링 예정
-            throw new NullPointerException("토큰이 조회되지 않습니다.");
-        }
-
-        // memberSeq 꺼내기
-        Long memberSeq = jwtTokenProvider.getMemberSeqFromToken(accessToken);
-
-        if (memberSeq == null) {
-            throw new NullPointerException("해당 MemberSeq가 조회되지 않습니다.");
-        }
-
         Post post = postRepository.findById(postSeq)
-                .orElseThrow(() -> new EntityNotFoundException("해당 매거진을 찾을 수 없습니다. ID = " + postSeq));
+                .orElseThrow(() -> new RestApiException(ErrorCode.POST_NOT_FOUND));
 
-        Members members = membersRepository.findById(memberSeq)
-                .orElseThrow(()-> new EntityNotFoundException("해당 유저를 찾을 수 없습니다."));
+        Members members = getCurrentMember();
 
         boolean isWriter = post.getMembers().getMemberSeq().equals(members.getMemberSeq());
         boolean isAdmin = (members.getMemberRole() == MemberRole.ADMIN);
 
         if (!isWriter && !isAdmin) {
-            throw new AccessDeniedException("수정 권한이 없습니다.");
+            throw new RestApiException(ErrorCode.FORBIDDEN);
         }
 
         if (postReqDTO.getNotice() != null && !isAdmin){
-            throw new AccessDeniedException("공지 수정 권한이 없습니다.");
+            throw new RestApiException(ErrorCode.FORBIDDEN);
         }
 
         // 제목 수정이 있으면 저장
@@ -249,25 +217,41 @@ public class PostService {
 
     // 게시글 삭제 기능
     @Transactional
-    public PostResDto deletePost(Long postSeq, Long memberSeq) {
+    public PostResDto deletePost(Long postSeq) {
 
         Post post = postRepository.findById(postSeq)
-                .orElseThrow(() -> new EntityNotFoundException("해당 매거진을 찾을 수 없습니다. POST_ID = " + postSeq));
+                .orElseThrow(() -> new RestApiException(ErrorCode.POST_NOT_FOUND));
 
-        Members currentMember = membersRepository.findById(memberSeq)
-                .orElseThrow( () -> new EntityNotFoundException("해당 유저를 찾을 수 없습니다. USER_ID = " + memberSeq));
+        Members currentMember = getCurrentMember();
 
         boolean isWrtter = post.getMembers().getMemberSeq().equals(currentMember.getMemberSeq());
         boolean isAdmin = currentMember.getMemberRole() == MemberRole.ADMIN;
 
         if(!isWrtter && !isAdmin){
-            throw new AccessDeniedException("삭제 권한이 없습니다.");
+            throw new RestApiException(ErrorCode.FORBIDDEN);
         }
 
         // 게시물 소프트 삭제
         post.inActivate();
 
         return PostResDto.fromEntity(post);
+    }
+
+    private Members getCurrentMember() {
+        String accessToken = jwtTokenProvider.resolveToken();
+
+        if (accessToken == null || accessToken.isEmpty()) {
+            throw new RestApiException(ErrorCode.ACCESS_TOKEN_NULL);
+        }
+
+        Long memberSeq = jwtTokenProvider.getMemberSeqFromToken(accessToken);
+
+        if (memberSeq == null) {
+            throw new RestApiException(ErrorCode.INVALID_TOKEN);
+        }
+
+        return membersRepository.findById(memberSeq)
+                .orElseThrow(() -> new RestApiException(ErrorCode.USER_NOT_FOUND));
     }
 
     // 게시물 검색 기능

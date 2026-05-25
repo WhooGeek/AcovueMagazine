@@ -1,5 +1,7 @@
 package com.AcovueMagazine.Member.Util;
 
+import com.AcovueMagazine.Common.Response.ErrorCode;
+import com.AcovueMagazine.Common.Response.RestApiException;
 import com.AcovueMagazine.Member.Dao.RedisDao;
 import com.AcovueMagazine.Member.Dto.MemberLoginDto;
 import com.AcovueMagazine.Member.Entity.Members;
@@ -69,9 +71,9 @@ public class JwtTokenProvider {
             username = memberDetail.getMember().getMemberEmail();
             memberSeq = memberDetail.getMember().getMemberSeq();
         } else if(principal instanceof User user){
-            throw new IllegalArgumentException("MemberSeq를 가져올 수 없습니다.");
+            throw new RestApiException(ErrorCode.INVALID_TOKEN);
         } else{
-            throw new IllegalArgumentException("알 수 없는 principal 타입");
+            throw new RestApiException(ErrorCode.INVALID_TOKEN);
         }
 
         //AccessToken 생성
@@ -118,7 +120,7 @@ public class JwtTokenProvider {
         Claims claims = parseClaims(accessToken);
 
         if(claims.get("auth") == null){
-            throw new RuntimeException("권한 정보가 없는 토큰입니다.");
+            throw new RestApiException(ErrorCode.INVALID_TOKEN);
         }
 
         //Claim에 있는 정보 가져오기
@@ -208,7 +210,7 @@ public class JwtTokenProvider {
     //RefreshToken 삭제
     public void deleteRefreshToken(String username) {
         if(username == null || username.isEmpty()){
-            throw new IllegalArgumentException("username cannot be null or empty");
+            throw new RestApiException(ErrorCode.USER_NOT_FOUND);
         }
 
         // 로그아웃 시 redis.dao에서 refreshTOken 삭제

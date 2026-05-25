@@ -6,9 +6,7 @@ import com.AcovueMagazine.Comment.Dto.CommentResDTO;
 import com.AcovueMagazine.Comment.Service.CommentService;
 import com.AcovueMagazine.Common.Response.ApiResponse;
 import com.AcovueMagazine.Common.Response.ResponseUtil;
-import com.AcovueMagazine.Member.Util.PrincipalDetails;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -40,33 +38,27 @@ public class CommentController {
 
     // 댓글, 대댓글 등록
     @PostMapping("/create/{postId}")
-    public ApiResponse<?> createComment(@PathVariable Long postId, @RequestBody CommentReqDTO commentReqDTO, @AuthenticationPrincipal PrincipalDetails principal){
+    public ApiResponse<?> createComment(@PathVariable Long postId, @RequestBody CommentReqDTO commentReqDTO){
 
-        Long memberSeq = principal.getMemberSeq();
-
-        CommentResDTO comment = commentService.createComment(postId, commentReqDTO, memberSeq);
+        CommentResDTO comment = commentService.createComment(postId, commentReqDTO);
 
         return ResponseUtil.successResponse("댓글을 성공적으로 조회하였습니다.", comment).getBody();
     }
 
     //댓글, 대댓글 수정
     @PutMapping("/update/{postId}/{commentSeq}")
-    public ApiResponse<?> updateComment(@PathVariable Long postId, @PathVariable Long commentSeq, @RequestBody CommentReqDTO commentReqDTO, @AuthenticationPrincipal PrincipalDetails principal){
+    public ApiResponse<?> updateComment(@PathVariable Long postId, @PathVariable Long commentSeq, @RequestBody CommentReqDTO commentReqDTO){
 
-        Long memberSeq = principal.getMemberSeq();
-
-        CommentResDTO comment = commentService.updateComment(postId, commentSeq, commentReqDTO, memberSeq);
+        CommentResDTO comment = commentService.updateComment(postId, commentSeq, commentReqDTO);
 
         return ResponseUtil.successResponse("댓글을 성공적으로 수정하였습니다.",comment).getBody();
     }
 
     //댓글, 대댓글 삭제
     @DeleteMapping("/delete/{postId}/{commentSeq}")
-    public ApiResponse<?> deleteComment(@PathVariable Long postId, @PathVariable Long commentSeq, @AuthenticationPrincipal PrincipalDetails principal){
+    public ApiResponse<?> deleteComment(@PathVariable Long postId, @PathVariable Long commentSeq){
 
-        Long memberSeq = principal.getMemberSeq();
-
-        CommentResDTO comment = commentService.deleteComment(postId, commentSeq, memberSeq);
+        CommentResDTO comment = commentService.deleteComment(postId, commentSeq);
 
         return ResponseUtil.successResponse("댓글을 성공적으로 삭제하였습니다.",comment).getBody();
     }

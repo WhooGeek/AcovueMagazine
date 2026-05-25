@@ -1,7 +1,6 @@
 package com.AcovueMagazine.Member.Controller;
 
 import com.AcovueMagazine.Common.Response.ApiResponse;
-import com.AcovueMagazine.Common.Response.ErrorCode;
 import com.AcovueMagazine.Common.Response.ResponseUtil;
 import com.AcovueMagazine.Member.Dto.MemberDataDto;
 import com.AcovueMagazine.Member.Dto.MemberLoginDto;
@@ -9,11 +8,8 @@ import com.AcovueMagazine.Member.Dto.MemberSignUpDto;
 import com.AcovueMagazine.Member.Dto.MemberUpdateDto;
 import com.AcovueMagazine.Member.Entity.MemberStatus;
 import com.AcovueMagazine.Member.Entity.Members;
-import com.AcovueMagazine.Member.Repository.MembersRepository;
 import com.AcovueMagazine.Member.Service.MemberService;
-import com.AcovueMagazine.Member.Util.JwtTokenProvider;
-import com.AcovueMagazine.Member.Util.MemberDetail;
-import org.springframework.http.HttpStatus;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
@@ -22,17 +18,11 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/member")
+@RequiredArgsConstructor
 public class MemberController {
 
     private final MemberService memberService;
-    private final MembersRepository membersRepository;
-    private final JwtTokenProvider jwtTokenProvider;
 
-    public MemberController(MemberService memberService, MembersRepository membersRepository, JwtTokenProvider jwtTokenProvider) {
-        this.memberService = memberService;
-        this.membersRepository = membersRepository;
-        this.jwtTokenProvider = jwtTokenProvider;
-    }
     // 로그인
     @PostMapping("/login")
     public ResponseEntity<MemberLoginDto.TokenResDto> login(@RequestBody Map<String, String> loginForm){
@@ -44,20 +34,7 @@ public class MemberController {
     // 로그아웃
     @PutMapping("/logout")
     public ResponseEntity<?> logout(Authentication authentication){
-        Object principal = authentication.getPrincipal();
-        Long memberSeq = null;
-        String email;
-
-        if (principal instanceof MemberDetail memberDetail){
-            email = memberDetail.getUsername();
-            memberSeq = memberDetail.getMember().getMemberSeq();
-        } else if (principal instanceof org.springframework.security.core.userdetails.User user){
-            email = user.getUsername();
-        }else{
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("인증 정보가 없습니다.");
-        }
-
-        memberService.logout(authentication, memberSeq, email);
+        memberService.logout(authentication);
 
         return ResponseEntity.ok("로그아웃이 성공적으로 완료되었습니다.");
     }
@@ -74,43 +51,16 @@ public class MemberController {
     @PutMapping("/me/deactivate")
     public ApiResponse<?> deactivate(Authentication authentication){
 
-        String accessToken = jwtTokenProvider.resolveToken();
+        MemberStatus memberStatus = memberService.inActivateCurrentUser();
 
-        if (accessToken == null) {
-            return ResponseUtil.failureResponse("토큰 정보가 없습니다.", ErrorCode.INVALID_TOKEN.getCode(), HttpStatus.UNAUTHORIZED).getBody();
-        }
-
-        // memberSeq 꺼내기
-        Long memberSeq = jwtTokenProvider.getMemberSeqFromToken(accessToken);
-
-        if (memberSeq == null) {
-            return ResponseUtil.failureResponse("회원 정보를 확인할 수 없습니다.", ErrorCode.USER_NOT_FOUND.getCode(), HttpStatus.BAD_REQUEST).getBody();
-        }
-
-        // 비활성화 처리
-        memberService.inActivateUser(memberSeq);
-
-        return ResponseUtil.successResponse("성공적으로 회원 상태가 비활성화 되었습니다.", memberSeq).getBody();
+        return ResponseUtil.successResponse("성공적으로 회원 상태가 비활성화 되었습니다.", memberStatus).getBody();
     }
 
     // 회원 내 정보 조회
     @GetMapping("/me")
     public ApiResponse<?> getUserData(Authentication authentication){
 
-        String accessToken = jwtTokenProvider.resolveToken();
-
-        if (accessToken == null) {
-            return ResponseUtil.failureResponse("토큰 정보가 없습니다.", ErrorCode.INVALID_TOKEN.getCode(), HttpStatus.UNAUTHORIZED).getBody();
-        }
-
-        // memberSeq 꺼내기
-        Long memberSeq = jwtTokenProvider.getMemberSeqFromToken(accessToken);
-
-        if (memberSeq == null) {
-            return ResponseUtil.failureResponse("회원 정보를 확인할 수 없습니다.", ErrorCode.USER_NOT_FOUND.getCode(), HttpStatus.BAD_REQUEST).getBody();
-        }
-
-        MemberDataDto member = memberService.getMemberData(memberSeq);
+        MemberDataDto member = memberService.getCurrentMemberData();
 
         return ResponseUtil.successResponse("마이페이지, 내 정보 조회를 성공적으로 수행하였습니다.", member).getBody();
     }
@@ -120,28 +70,14 @@ public class MemberController {
     @PutMapping("/me/update")
     public ApiResponse<?> userDataUpdate(Authentication authentication, @RequestBody MemberUpdateDto memberUpdateDto){
 
-        String accessToken = jwtTokenProvider.resolveToken();
-
-        if (accessToken == null) {
-            return ResponseUtil.failureResponse("토큰 정보가 없습니다.", ErrorCode.INVALID_TOKEN.getCode(), HttpStatus.UNAUTHORIZED).getBody();
-        }
-
-        // memberSeq 꺼내기
-        Long memberSeq = jwtTokenProvider.getMemberSeqFromToken(accessToken);
-
-        if (memberSeq == null) {
-            return ResponseUtil.failureResponse("회원 정보를 확인할 수 없습니다.", ErrorCode.USER_NOT_FOUND.getCode(), HttpStatus.BAD_REQUEST).getBody();
-        }
-
-        Members members = memberService.updateMemberData(memberSeq, memberUpdateDto);
+        Members members = memberService.updateCurrentMemberData(memberUpdateDto);
 
         return ResponseUtil.successResponse("성공적으로 회원 정보 변경이 완료되었습니다.", members).getBody();
     }
 
     // access token 만료 후 refreshToken 발급 -> accessToken 재발급으로 이어지는 기능
     @PostMapping("/reissue")
-    public ApiResponse<?> reissue(@RequestHeader("Refresh-Token")
-                                     String refreshTokenHeader){
+    public ApiResponse<?> reissue(@RequestHeader("Refresh-Token") String refreshTokenHeader){
         MemberLoginDto.TokenReissueResDTO response = memberService.reissueAccessToken(refreshTokenHeader);
 
         return ResponseUtil.successResponse("성공적으로 accessToken이 재 발급 되었습니다.", response).getBody();
