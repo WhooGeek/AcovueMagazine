@@ -7,9 +7,7 @@ import com.AcovueMagazine.Like.Dto.CommentLikeResDTO;
 import com.AcovueMagazine.Like.Dto.PostLikeCountResDTO;
 import com.AcovueMagazine.Like.Dto.PostLikeResDTO;
 import com.AcovueMagazine.Like.Service.LikeService;
-import com.AcovueMagazine.Member.Util.PrincipalDetails;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -21,22 +19,18 @@ public class LikeController {
 
     //매거진 좋아요 토글 기능
     @PostMapping("post/{postSeq}")
-    public ApiResponse<?> togglePostLike(@PathVariable Long postSeq, @AuthenticationPrincipal PrincipalDetails principal){
+    public ApiResponse<?> togglePostLike(@PathVariable Long postSeq){
 
-        Long memberSeq = principal.getMemberSeq();
-
-        PostLikeResDTO like = likeService.togglePostLike(postSeq, memberSeq);
+        PostLikeResDTO like = likeService.togglePostLike(postSeq);
 
         return ResponseUtil.successResponse("매거진 좋아요를 성공적으로 등록/삭제하였습니다.", like).getBody();
     }
 
     //댓글 좋아요 토글 기능
     @PostMapping("comment/{commentSeq}")
-    public ApiResponse<?> toggleCommentLike(@PathVariable Long commentSeq, @AuthenticationPrincipal PrincipalDetails principal){
+    public ApiResponse<?> toggleCommentLike(@PathVariable Long commentSeq){
 
-        Long memberSeq = principal.getMemberSeq();
-
-        CommentLikeResDTO like = likeService.toggleCommentLike(commentSeq, memberSeq);
+        CommentLikeResDTO like = likeService.toggleCommentLike(commentSeq);
 
         return ResponseUtil.successResponse("댓글 좋아요를 성공적으로 등록/삭제하였습니다.", like).getBody();
     }

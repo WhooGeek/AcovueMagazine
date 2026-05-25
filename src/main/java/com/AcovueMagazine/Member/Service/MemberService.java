@@ -1,7 +1,7 @@
 package com.AcovueMagazine.Member.Service;
 
 import com.AcovueMagazine.Common.Response.ErrorCode;
-import com.AcovueMagazine.Common.Response.ResponseUtil;
+import com.AcovueMagazine.Common.Response.RestApiException;
 import com.AcovueMagazine.Member.Dao.RedisDao;
 import com.AcovueMagazine.Member.Dto.MemberDataDto;
 import com.AcovueMagazine.Member.Dto.MemberLoginDto;
@@ -13,17 +13,15 @@ import com.AcovueMagazine.Member.Entity.MemberStatus;
 import com.AcovueMagazine.Member.Entity.Members;
 import com.AcovueMagazine.Member.Repository.MembersRepository;
 import com.AcovueMagazine.Member.Util.JwtTokenProvider;
-import jakarta.persistence.EntityNotFoundException;
+import com.AcovueMagazine.Member.Util.MemberDetail;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.core.userdetails.User;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.lang.reflect.Member;
 import java.time.Duration;
 
 @Service
@@ -42,15 +40,15 @@ public class MemberService {
 
         // 이메일 중복 체크
         if (membersRepository.existsByMemberEmail(memberSignUpDto.getMemberEmail())){
-            throw new IllegalArgumentException("이미 존재하는 이메일 입니다.");
+            throw new RestApiException(ErrorCode.DUPLICATE_EMAIL);
         }
         // 닉네임 중복 체크
         if (membersRepository.existsByMemberNickname(memberSignUpDto.getMemberNickname())){
-            throw new IllegalArgumentException("이미 존재하는 닉네임 입니다.");
+            throw new RestApiException(ErrorCode.DUPLICATE_NICKNAME);
         }
         // 비밀번호 최소 자리수, 영문, 숫자 혼합했는지 체크
         if (!isValidPassword(memberSignUpDto.getMemberPassword())) {
-            throw new IllegalArgumentException("비밀번호는 최소 8자리 이상이며, 영문자와 숫자를 포함해야 합니다.");
+            throw new RestApiException(ErrorCode.INVALID_PASSWORD_FORMAT);
         }
 
         // 비밀번호 암호화
@@ -77,19 +75,14 @@ public class MemberService {
     // 회원 로그인
     public MemberLoginDto.TokenResDto login(String memberEmail, String memberPassword) {
 
-        System.out.println(">>> 로그인 시도: " + memberEmail);
-
         // DB에서 회원을 조회
         Members member = membersRepository.findByMemberEmail(memberEmail)
-                .orElseThrow(() -> new RuntimeException("회원이 존재하지 않습니다."));
-        System.out.println(">>> 회원 조회 완료, DB 비밀번호: " + member.getMemberPassword());
+                .orElseThrow(() -> new RestApiException(ErrorCode.USER_NOT_FOUND));
 
         // 비번 검증
         boolean matches = passwordEncoder.matches(memberPassword, member.getMemberPassword());
-        System.out.println(">>> 입력 비밀번호와 DB 비밀번호 비교: " + matches);
         if (!matches) {
-            System.out.println(">>> 비밀번호 불일치");
-            throw new RuntimeException("비밀번호가 일치하지 않습니다");
+            throw new RestApiException(ErrorCode.INVALID_PASSWORD);
         }
 //        String encodedPassword = passwordEncoder.encode(memberPassword);
 
@@ -98,11 +91,8 @@ public class MemberService {
                 new UsernamePasswordAuthenticationToken(memberEmail, memberPassword);
         Authentication authentication = authenticationManagerBuilder.getObject().authenticate(authenticationToken);
 
-        System.out.println(">>> Authentication 생성 완료" + authentication.isAuthenticated());
-
         //검증 된 정보로 토큰 생성
         MemberLoginDto.TokenResDto jwtToken = jwtTokenProvider.generateToken(authentication);
-        System.out.println(">>> jwtToken: " + jwtToken);
 
         return jwtToken;
     }
@@ -116,7 +106,8 @@ public class MemberService {
 
 
     // 회원 로그아웃
-    public void logout(Authentication authentication, Long memberSeq, String email) {
+    public void logout(Authentication authentication) {
+        String email = getEmailFromAuthentication(authentication);
 
         // redis refreshtoken delete
         jwtTokenProvider.deleteRefreshToken(email);
@@ -142,11 +133,29 @@ public class MemberService {
         }
     }
 
+    private String getEmailFromAuthentication(Authentication authentication) {
+        if (authentication == null || authentication.getPrincipal() == null) {
+            throw new RestApiException(ErrorCode.INVALID_TOKEN);
+        }
+
+        Object principal = authentication.getPrincipal();
+
+        if (principal instanceof MemberDetail memberDetail) {
+            return memberDetail.getUsername();
+        }
+
+        if (principal instanceof User user) {
+            return user.getUsername();
+        }
+
+        throw new RestApiException(ErrorCode.INVALID_TOKEN);
+    }
+
     // 회원 탈퇴 ( 회원 비활성화 )
     public MemberStatus inActivateUser(Long memberSeq) {
 
         Members members = membersRepository.findById(memberSeq)
-                .orElseThrow(() -> new EntityNotFoundException("해당 회원을 찾을 수 없습니다."));
+                .orElseThrow(() -> new RestApiException(ErrorCode.USER_NOT_FOUND));
 
         // 회원 계정 상태 Active -> IeActive
         members.inActivate();
@@ -158,7 +167,7 @@ public class MemberService {
     // 회원 정보 변경 (비밀번호, 닉네임)
     public Members updateMemberData(Long memberSeq, MemberUpdateDto memberUpdateDto) {
 
-        Members member = membersRepository.findById(memberSeq).orElseThrow(() -> new IllegalArgumentException("회원 정보를 찾을 수 없습니다."));
+        Members member = membersRepository.findById(memberSeq).orElseThrow(() -> new RestApiException(ErrorCode.USER_NOT_FOUND));
 
         boolean changed = false;
 
@@ -168,7 +177,7 @@ public class MemberService {
                     .orElse(null);
 
             if (existingNickName != null && !existingNickName.getMemberSeq().equals(memberSeq)) {
-                throw new IllegalArgumentException("이미 사용 중인 닉네임입니다.");
+                throw new RestApiException(ErrorCode.DUPLICATE_NICKNAME);
             }
 
             member.updateNickname(memberUpdateDto.getMemberNickname());
@@ -182,11 +191,11 @@ public class MemberService {
 
             // 현재 비밀번호 일치 여부 체크
             if (!passwordEncoder.matches(memberUpdateDto.getMemberPassword(), member.getMemberPassword())) {
-                throw new IllegalArgumentException("현재 비밀번호가 일치하지 않습니다.");
+                throw new RestApiException(ErrorCode.INVALID_PASSWORD);
             }
 
             if (!isValidPassword(memberUpdateDto.getMemberChangePassword())) {
-                throw new IllegalArgumentException("비밀번호는 최소 8자리 이상이며, 영문자와 숫자를 포함해야 합니다.");
+                throw new RestApiException(ErrorCode.INVALID_PASSWORD_FORMAT);
             }
 
             // 새 비밀번호 암호화하여 저장
@@ -197,7 +206,7 @@ public class MemberService {
         }
 
         if (!changed) {
-            throw new IllegalArgumentException("변경 된 사항이 없습니다.");
+            throw new RestApiException(ErrorCode.NO_CHANGE_REQUEST);
         }
 
         return member;
@@ -208,27 +217,58 @@ public class MemberService {
     public MemberDataDto getMemberData(Long memberSeq) {
 
         Members members = membersRepository.findById(memberSeq)
-                .orElseThrow(() -> new EntityNotFoundException("해당 회원을 찾을 수 없습니다."));
+                .orElseThrow(() -> new RestApiException(ErrorCode.USER_NOT_FOUND));
 
         return MemberDataDto.from(members);
+    }
+
+    public MemberStatus inActivateCurrentUser() {
+        Long memberSeq = getCurrentMemberSeq();
+        return inActivateUser(memberSeq);
+    }
+
+    public MemberDataDto getCurrentMemberData() {
+        Long memberSeq = getCurrentMemberSeq();
+        return getMemberData(memberSeq);
+    }
+
+    public Members updateCurrentMemberData(MemberUpdateDto memberUpdateDto) {
+        Long memberSeq = getCurrentMemberSeq();
+        return updateMemberData(memberSeq, memberUpdateDto);
+    }
+
+    private Long getCurrentMemberSeq() {
+        String accessToken = jwtTokenProvider.resolveToken();
+
+        if (accessToken == null || accessToken.isEmpty()) {
+            throw new RestApiException(ErrorCode.ACCESS_TOKEN_NULL);
+        }
+
+        Long memberSeq = jwtTokenProvider.getMemberSeqFromToken(accessToken);
+
+        if (memberSeq == null) {
+            throw new RestApiException(ErrorCode.INVALID_TOKEN);
+        }
+
+        return memberSeq;
     }
 
     //accessToken 재발급
     public MemberLoginDto.TokenReissueResDTO reissueAccessToken(String refreshTokenHeader) {
 
         if(refreshTokenHeader == null || !refreshTokenHeader.startsWith("Bearer ")){
-            throw new IllegalArgumentException("RefreshToken 형식이 올바르지 않습니다.");
+            throw new RestApiException(ErrorCode.REFRESH_TOKEN_NULL);
         }
 
         String refreshToken = refreshTokenHeader.substring(7);
 
         if(!jwtTokenProvider.validateRefreshToken(refreshToken)){
-            throw new IllegalArgumentException("유효하지 않은 RefreshToken 입니다.");
+            throw new RestApiException(ErrorCode.INVALID_REFRESH_TOKEN);
         }
 
         String email = jwtTokenProvider.getUsernameFromRefreshToken(refreshToken);
 
-        Members member = membersRepository.findByMemberEmail(email).orElseThrow(() -> new EntityNotFoundException("회원 정보를 찾을 수 없습니다."));
+        Members member = membersRepository.findByMemberEmail(email).orElseThrow(() -> new RestApiException(ErrorCode.USER_NOT_FOUND));
 
         String newAccessToken = jwtTokenProvider.reissueAccessToken(member);
 

@@ -3,7 +3,6 @@ package com.AcovueMagazine.Post.Controller;
 
 import com.AcovueMagazine.Common.Response.ApiResponse;
 import com.AcovueMagazine.Common.Response.ResponseUtil;
-import com.AcovueMagazine.Member.Util.PrincipalDetails;
 import com.AcovueMagazine.Post.Dto.PostReqDto;
 import com.AcovueMagazine.Post.Dto.PostResDto;
 import com.AcovueMagazine.Post.Entity.CommunityCategory;
@@ -12,7 +11,6 @@ import com.AcovueMagazine.Post.Service.PostService;
 import com.AcovueMagazine.Post.Service.S3UploadService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -90,8 +88,8 @@ public class PostController {
 
     // 매거진 삭제
     @DeleteMapping("/delete/{postSeq}")
-    public ApiResponse<?> deletePost(@PathVariable Long postSeq, @AuthenticationPrincipal PrincipalDetails principal) {
-        PostResDto magazine = postService.deletePost(postSeq, principal.getMemberSeq());
+    public ApiResponse<?> deletePost(@PathVariable Long postSeq) {
+        PostResDto magazine = postService.deletePost(postSeq);
 
         return ResponseUtil.successResponse("매거진 삭제를 성공적으로 수행하였습니다", magazine).getBody();
     }
@@ -99,17 +97,13 @@ public class PostController {
     // S3 사진 업로드
     @PostMapping("/image")
     public ApiResponse<?> uploadImage(@RequestParam("image")MultipartFile image) {
-        try{
-            // S3 업로드 > URL 리턴
-            String imageUrl = s3UploadService.saveFile(image);
+        // S3 업로드 > URL 리턴
+        String imageUrl = s3UploadService.saveFile(image);
 
-            Map<String, String> data = new HashMap<>();
-            data.put("imageUrl", imageUrl);
+        Map<String, String> data = new HashMap<>();
+        data.put("imageUrl", imageUrl);
 
-            return ResponseUtil.successResponse("S3 이미지 업로드를 성공적으로 수행하였습니다.", data).getBody();
-        }catch (Exception e){
-            throw new RuntimeException("S3 이미지 업로드 도중 오류가 발생하였습니다.: " + e.getMessage());
-        }
+        return ResponseUtil.successResponse("S3 이미지 업로드를 성공적으로 수행하였습니다.", data).getBody();
 
     }
 

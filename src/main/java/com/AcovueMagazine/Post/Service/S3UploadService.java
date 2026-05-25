@@ -1,6 +1,7 @@
 package com.AcovueMagazine.Post.Service;
 
-import com.amazonaws.services.s3.model.CannedAccessControlList;
+import com.AcovueMagazine.Common.Response.ErrorCode;
+import com.AcovueMagazine.Common.Response.RestApiException;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.PutObjectRequest;
 import org.springframework.beans.factory.annotation.Value;
@@ -23,7 +24,7 @@ public class S3UploadService {
     @Value("${cloud.aws.s3.bucket}")
     private String bucket;
 
-    public String saveFile(MultipartFile multipartFile) throws IOException {
+    public String saveFile(MultipartFile multipartFile) {
 
         String originalFilename = multipartFile.getOriginalFilename();
 
@@ -35,8 +36,12 @@ public class S3UploadService {
         metadata.setContentLength(multipartFile.getSize());
         metadata.setContentType(multipartFile.getContentType());
 
-        // S3로 전송, PublicRead 권한 부여
-        amazonS3.putObject(new PutObjectRequest(bucket, uniqueFileName, multipartFile.getInputStream(), metadata));
+        try {
+            // S3로 전송, PublicRead 권한 부여
+            amazonS3.putObject(new PutObjectRequest(bucket, uniqueFileName, multipartFile.getInputStream(), metadata));
+        } catch (IOException e) {
+            throw new RestApiException(ErrorCode.S3_UPLOAD_FAILED);
+        }
 
         // S3 올린 파일 URL 꺼내서 반환
         return amazonS3.getUrl(bucket, uniqueFileName).toString();
@@ -46,13 +51,8 @@ public class S3UploadService {
         List<String> imageUrls = new ArrayList<>();
 
         for (MultipartFile file : multipartFiles) {
-            try{
-                String url = saveFile(file);
-                imageUrls.add(url);
-            } catch (IOException e){
-                throw new RuntimeException("S3 다중 이미지 업로드에 실패하였습니다.", e);
-
-            }
+            String url = saveFile(file);
+            imageUrls.add(url);
         }
         return imageUrls;
     }
