@@ -7,7 +7,7 @@ services:
     command: ["redis-server", "--appendonly", "yes"]
     volumes:
       - redis-data:/data
-    restart: unless-stopped
+    restart: always
 
   app:
     image: whoowhoo/acovue-magazine:latest
@@ -21,7 +21,7 @@ services:
       REDIS_PORT: 6379
     depends_on:
       - redis
-    restart: unless-stopped
+    restart: always
 
 volumes:
   redis-data:
