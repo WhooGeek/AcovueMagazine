@@ -3,6 +3,8 @@ package com.AcovueMagazine.Post.Controller;
 
 import com.AcovueMagazine.Common.Response.ApiResponse;
 import com.AcovueMagazine.Common.Response.ResponseUtil;
+import com.AcovueMagazine.Post.Dto.PostNavigateDto;
+import com.AcovueMagazine.Post.Dto.PostNavigationResDto;
 import com.AcovueMagazine.Post.Dto.PostReqDto;
 import com.AcovueMagazine.Post.Dto.PostResDto;
 import com.AcovueMagazine.Post.Entity.CommunityCategory;
@@ -18,6 +20,7 @@ import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/post")
@@ -105,6 +108,19 @@ public class PostController {
 
         return ResponseUtil.successResponse("S3 이미지 업로드를 성공적으로 수행하였습니다.", data).getBody();
 
+    }
+
+    // 게시물 네비게이션
+    @GetMapping("/find/{postSeq}/navigation")
+    public ApiResponse<?> navigatePost(@PathVariable Long postSeq){
+
+        // 이전 게시물 데이터 반환
+        PostNavigationResDto postNavigation = postService.getNavigation(postSeq);
+
+        return ResponseUtil.successResponse(
+                "이전/다음 게시글 조회를 성공적으로 수행하였습니다.",
+                postNavigation
+        ).getBody();
     }
 
 

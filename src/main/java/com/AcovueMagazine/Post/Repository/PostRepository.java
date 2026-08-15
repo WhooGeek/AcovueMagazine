@@ -32,4 +32,15 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     Page<Post> findByPostStatus(PostStatus postStatus, Pageable pageable);
 
     Page<Post> findByPostCategoryAndCommunityCategoryAndPostStatus(PostType postType, CommunityCategory communityCategory, PostStatus postStatus, Pageable pageable);
+
+    Optional<Post> findFirstByPostSeqLessThanAndPostStatusAndNoticeFalseAndPostCategoryOrderByPostSeqDesc(
+            Long postSeq,
+            PostStatus postStatus,
+            PostType postCategory
+    );
+
+    Optional<Post> findFirstByPostSeqGreaterThanAndPostStatusAndNoticeFalseAndPostCategoryOrderByPostSeqAsc(
+            Long postSeq,
+            PostStatus postStatus,
+            PostType postCategory);
 }

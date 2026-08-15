@@ -6,6 +6,8 @@ import com.AcovueMagazine.Common.Response.ErrorCode;
 import com.AcovueMagazine.Common.Response.RestApiException;
 import com.AcovueMagazine.Like.Respository.PostLikeRepository;
 import com.AcovueMagazine.Member.Util.JwtTokenProvider;
+import com.AcovueMagazine.Post.Dto.PostNavigateDto;
+import com.AcovueMagazine.Post.Dto.PostNavigationResDto;
 import com.AcovueMagazine.Post.Dto.PostReqDto;
 import com.AcovueMagazine.Post.Entity.*;
 import com.AcovueMagazine.Post.Dto.PostResDto;
@@ -28,6 +30,7 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -269,5 +272,37 @@ public class PostService {
         return searchMagazines.stream()
                 .map(PostResDto::fromEntity)
                 .collect(Collectors.toList());
+    }
+
+    // 이전, 다음 게시물 조회
+    @Transactional
+    public PostNavigationResDto getNavigation(Long postSeq) {
+        Post currentPost = getPostEntity(postSeq);
+
+        Optional<Post> prevPost = postRepository.findFirstByPostSeqLessThanAndPostStatusAndNoticeFalseAndPostCategoryOrderByPostSeqDesc(
+                currentPost.getPostSeq(),
+                PostStatus.ACTIVE,
+                currentPost.getPostCategory()
+        );
+
+        Optional<Post> nextPost = postRepository.findFirstByPostSeqGreaterThanAndPostStatusAndNoticeFalseAndPostCategoryOrderByPostSeqAsc(
+                currentPost.getPostSeq(),
+                PostStatus.ACTIVE,
+                currentPost.getPostCategory()
+        );
+
+        return new PostNavigationResDto(
+                prevPost.map(PostNavigateDto::fromEntity).orElse(null),
+                nextPost.map(PostNavigateDto::fromEntity).orElse(null)
+        );
+
+
+
+
+    }
+
+    private Post getPostEntity(Long postSeq) {
+        return postRepository.findById(postSeq)
+                .orElseThrow(() -> new RestApiException(ErrorCode.POST_NOT_FOUND));
     }
 }
